@@ -533,7 +533,7 @@ let supaOnline = false;
 
 async function supaGet(){
   try{
-    const res  = await fetch('/api/db', { headers: authHeaders() });
+    const res  = await fetch('/.netlify/functions/db', { headers: authHeaders() });
     const json = await res.json();
     return json.data || null;
   }catch{ return null; }
@@ -541,7 +541,7 @@ async function supaGet(){
 
 async function supaSet(payload){
   try{
-    const res = await fetch('/api/db', {
+    const res = await fetch('/.netlify/functions/db', {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ data: payload })
@@ -624,7 +624,7 @@ async function doLogin(){
   btn.textContent = 'Signing in…'; btn.disabled = true;
   try {
     // ── Call secure Netlify Function — no Supabase keys in browser ──
-    const res = await fetch('/api/auth', {
+    const res = await fetch('/.netlify/functions/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'login', username, password })
@@ -662,7 +662,7 @@ async function doLogin(){
     sessionStorage.setItem('av_token', result.token);
 
     // ── Log login for admin view ──
-    fetch('/api/logs', {
+    fetch('/.netlify/functions/logs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -698,7 +698,7 @@ async function checkSession(){
 
   // ── Re-verify the stored user ID and role via secure function ──
   try{
-    const res = await fetch('/api/auth', {
+    const res = await fetch('/.netlify/functions/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'verify', userId: parsed.id })
@@ -745,7 +745,7 @@ function togglePwVis(){
 
 async function getLoginLogs(dateFilter){
   if(!currentUser||(currentUser.role!=='admin'&&currentUser.role!=='owner')) return [];
-  let url = '/api/logs';
+  let url = '/.netlify/functions/logs';
   if(dateFilter) url += '?date=' + dateFilter;
   const res = await fetch(url, { headers: authHeaders() });
   return await res.json() || [];
@@ -2877,8 +2877,11 @@ function renderStaff(){
   const el=document.getElementById('main');el.className='';
   el.innerHTML=`
     <div class="page-hdr"><div class="page-title">Farm Staff</div>
-      ${isAdminOrOwner()?`<button class="btn btn-primary btn-sm" onclick="openAddStaff()">+ Add Staff Member</button>`
-      :`<span class="badge bg-amber">View only — staff</span>`}
+      <div class="page-actions">
+        ${isAdminOrOwner()?`<button class="btn btn-primary btn-sm" onclick="openAddStaff()">+ Add Staff Member</button>`
+        :`<span class="badge bg-amber">View only — staff</span>`}
+        <button class="btn btn-outline btn-sm" onclick="printStaffPayments()">🖨️ Print Payments</button>
+      </div>
     </div>
     <div class="card"><div class="tbl-wrap"><table>
       <thead><tr><th>Name</th><th>Role</th><th>Phone</th><th>Started</th><th>Salary/Month</th><th>Last Paid</th><th>Status</th><th></th></tr></thead>
@@ -2890,16 +2893,19 @@ function renderStaff(){
           <td>${fd(s.startDate)}</td><td>${ksh(s.monthlySalary)}</td>
           <td>${lastPay?fd(lastPay.date):'<span class="badge bg-amber">Never</span>'}</td>
           <td><span class="badge ${s.status==='active'?'bg-green':'bg-gray'}">${s.status}</span></td>
-          <td style="display:flex;gap:4px">
+          <td style="display:flex;gap:4px;flex-wrap:wrap">
             ${isAdminOrOwner()?`
             <button class="btn btn-outline btn-xs" onclick="openAddStaff('${s.id}')">Edit</button>
             <button class="btn btn-primary btn-xs" onclick="openPayStaff('${s.id}')">Pay</button>
+            <button class="btn btn-xs" style="background:var(--red);color:#fff" onclick="deleteStaff('${s.id}')">🗑️ Delete</button>
             `:'—'}
           </td>
         </tr>`;
       }).join('')}</tbody></table></div></div>
     <div class="card mt1">
-      <div class="card-hdr"><div class="card-title">Payment History</div></div>
+      <div class="card-hdr">
+        <div class="card-title">Payment History</div>
+      </div>
       <div class="tbl-wrap"><table>
         <thead><tr><th>Date</th><th>Staff</th><th>Amount</th><th>Period</th><th>Notes</th><th></th></tr></thead>
         <tbody>${db.staffPayments.sort((a,b)=>b.date.localeCompare(a.date)).map(p=>{
@@ -3007,7 +3013,6 @@ function deletePayment(payId){
   if(!confirm('Delete this payment record?'))return;
   const pay=db.staffPayments.find(x=>x.id===payId);
   if(pay){
-    // Remove the matching transaction
     db.transactions=db.transactions.filter(t=>!(
       t.staffPaymentId===payId||
       (t.category==='Staff salary'&&Number(t.amount)===Number(pay.amount)&&t.date===pay.date)
@@ -3015,6 +3020,61 @@ function deletePayment(payId){
   }
   db.staffPayments=db.staffPayments.filter(x=>x.id!==payId);
   sdb();closeModal();renderStaff();
+}
+
+function deleteStaff(id){
+  if(!requireAdmin('delete staff records'))return;
+  const s=db.staff.find(x=>x.id===id);
+  if(!s)return;
+  if(!confirm(`⚠️ Delete ${s.name} from staff records?\n\nThis will also remove all their payment records.\nThis cannot be undone.`))return;
+  // Remove all payments for this staff member
+  const payIds=db.staffPayments.filter(p=>p.staffId===id).map(p=>p.id);
+  db.transactions=db.transactions.filter(t=>!payIds.includes(t.staffPaymentId));
+  db.staffPayments=db.staffPayments.filter(p=>p.staffId!==id);
+  db.staff=db.staff.filter(x=>x.id!==id);
+  sdb();buildNotifications();renderStaff();
+}
+
+function printStaffPayments(){
+  const rows=db.staffPayments.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const total=rows.reduce((sum,p)=>sum+Number(p.amount),0);
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Staff Payment Records — Avexi Farm</title>
+  <style>
+    body{font-family:Arial,sans-serif;padding:2rem;color:#111;font-size:13px;}
+    h1{font-size:1.4rem;margin-bottom:.25rem;}
+    .sub{color:#666;font-size:.85rem;margin-bottom:1.5rem;}
+    table{width:100%;border-collapse:collapse;margin-top:1rem;}
+    th{background:#1a3a2a;color:#fff;padding:.5rem .75rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+    td{padding:.5rem .75rem;border-bottom:1px solid #e0e0e0;}
+    tr:nth-child(even) td{background:#f7f7f7;}
+    .total{font-weight:700;font-size:1rem;margin-top:1rem;text-align:right;color:#1a3a2a;}
+    .footer{margin-top:2rem;font-size:.75rem;color:#999;}
+    @media print{body{padding:1rem}}
+  </style></head><body>
+  <h1>🌿 Avexi Farm — Staff Payment Records</h1>
+  <div class="sub">Printed on ${new Date().toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'})} · ${rows.length} payment(s)</div>
+  <table>
+    <thead><tr><th>Date</th><th>Staff Name</th><th>Role</th><th>Amount (KES)</th><th>Period</th><th>Notes</th></tr></thead>
+    <tbody>
+    ${rows.map(p=>{
+      const s=db.staff.find(x=>x.id===p.staffId);
+      return`<tr>
+        <td>${fd(p.date)}</td>
+        <td><strong>${s?.name||'?'}</strong></td>
+        <td>${s?.role||'—'}</td>
+        <td><strong>KES ${Number(p.amount).toLocaleString()}</strong></td>
+        <td>${p.period||'—'}</td>
+        <td>${p.notes||'—'}</td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>
+  <div class="total">Total Paid: KES ${total.toLocaleString()}</div>
+  <div class="footer">Avexi Farm Management System · Nyandarua County, Kenya</div>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
+  win.document.close();
 }
 
 // ═══════════════════════════ FINANCE ═══════════════════════════
