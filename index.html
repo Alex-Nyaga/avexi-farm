@@ -533,7 +533,7 @@ let supaOnline = false;
 
 async function supaGet(){
   try{
-    const res  = await fetch('/.netlify/functions/db', { headers: authHeaders() });
+    const res  = await fetch('/api/db', { headers: authHeaders() });
     const json = await res.json();
     return json.data || null;
   }catch{ return null; }
@@ -541,7 +541,7 @@ async function supaGet(){
 
 async function supaSet(payload){
   try{
-    const res = await fetch('/.netlify/functions/db', {
+    const res = await fetch('/api/db', {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ data: payload })
@@ -624,7 +624,7 @@ async function doLogin(){
   btn.textContent = 'Signing in…'; btn.disabled = true;
   try {
     // ── Call secure Netlify Function — no Supabase keys in browser ──
-    const res = await fetch('/.netlify/functions/auth', {
+    const res = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'login', username, password })
@@ -662,7 +662,7 @@ async function doLogin(){
     sessionStorage.setItem('av_token', result.token);
 
     // ── Log login for admin view ──
-    fetch('/.netlify/functions/logs', {
+    fetch('/api/logs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -698,7 +698,7 @@ async function checkSession(){
 
   // ── Re-verify the stored user ID and role via secure function ──
   try{
-    const res = await fetch('/.netlify/functions/auth', {
+    const res = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'verify', userId: parsed.id })
@@ -745,7 +745,7 @@ function togglePwVis(){
 
 async function getLoginLogs(dateFilter){
   if(!currentUser||(currentUser.role!=='admin'&&currentUser.role!=='owner')) return [];
-  let url = '/.netlify/functions/logs';
+  let url = '/api/logs';
   if(dateFilter) url += '?date=' + dateFilter;
   const res = await fetch(url, { headers: authHeaders() });
   return await res.json() || [];
