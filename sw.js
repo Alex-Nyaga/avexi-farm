@@ -4,7 +4,7 @@
 //  Also caches the app so it loads fast even on slow data.
 // ═══════════════════════════════════════════════════
 
-const CACHE = 'avexi-v3';
+const CACHE = 'avexi-v2';
 const PRECACHE = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 // Install — cache app shell
