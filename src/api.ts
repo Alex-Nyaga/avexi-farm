@@ -3,7 +3,7 @@ export type FarmData = {
   cows?: Array<Record<string, unknown>>;
   sheep?: Array<Record<string, unknown>>;
   milkRecords?: Array<Record<string, unknown>>;
-  transactions?: Array<{ id?: string; type: 'income' | 'expense'; amount: number; category?: string; date?: string }>;
+  transactions?: Array<Record<string, unknown>>;
   staff?: Array<Record<string, unknown>>;
   [key: string]: unknown;
 };
