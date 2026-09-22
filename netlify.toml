@@ -1,6 +1,9 @@
 [build]
-  functions = "netlify/functions"
-  publish   = "."
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "api"
 
 [[headers]]
   for = "/*"
@@ -8,3 +11,4 @@
     X-Frame-Options        = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy        = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://*.supabase.co; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"

@@ -1,57 +1,32 @@
-// api/logs.js — Vercel Serverless Function
+import { requireToken, setCors } from './_auth.js';
+
 const SUPA_URL = process.env.SUPA_URL;
 const SUPA_KEY = process.env.SUPA_SERVICE_KEY;
-const HEADERS  = {
-  'Content-Type': 'application/json',
-  'apikey': SUPA_KEY,
-  'Authorization': 'Bearer ' + SUPA_KEY
-};
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-avexi-token');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-
-  if (req.method === 'OPTIONS') return res.status(200).end();
-
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  const user = requireToken(req, res);
+  if (!user) return;
+  if (!SUPA_URL || !SUPA_KEY) return res.status(500).json({ error: 'Database service is not configured' });
   try {
     if (req.method === 'POST') {
-      await fetch(`${SUPA_URL}/rest/v1/login_logs`, {
-        method: 'POST',
-        headers: HEADERS,
-        body: JSON.stringify(req.body)
-      });
-      return res.status(200).json({ ok: true });
+      const body = req.body || {};
+      const response = await fetch(`${SUPA_URL}/rest/v1/login_logs`, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` }, body: JSON.stringify({ ...body, user_id: user.id }) });
+      if (!response.ok) return res.status(502).json({ error: 'Could not record login log' });
+      return res.status(201).json({ ok: true });
     }
-
     if (req.method === 'GET') {
-      const token = req.headers['x-avexi-token'];
-      if (!token || !verifyToken(token)) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-      const date = req.query?.date;
-      let url = `${SUPA_URL}/rest/v1/login_logs?order=logged_in_at.desc&limit=100`;
-      if (date) url += `&date=eq.${date}`;
-      const r    = await fetch(url, { headers: HEADERS });
-      const data = await r.json();
-      return res.status(200).json(data);
+      if (!['owner', 'admin'].includes(user.role)) return res.status(403).json({ error: 'Forbidden' });
+      const date = typeof req.query?.date === 'string' ? req.query.date.replace(/[^0-9-]/g, '') : '';
+      const suffix = date ? `&logged_in_at=gte.${date}T00:00:00&logged_in_at=lt.${date}T23:59:59` : '';
+      const response = await fetch(`${SUPA_URL}/rest/v1/login_logs?order=logged_in_at.desc&limit=100${suffix}`, { headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` } });
+      if (!response.ok) return res.status(502).json({ error: 'Could not read login logs' });
+      return res.status(200).json(await response.json());
     }
-
     return res.status(405).json({ error: 'Method not allowed' });
-
-  } catch (e) {
-    return res.status(500).json({ error: e.message });
+  } catch (error) {
+    console.error('logs request failed', error);
+    return res.status(500).json({ error: 'Logs request failed' });
   }
-}
-
-function verifyToken(token) {
-  try {
-    const secret = process.env.AVEXI_SECRET || 'avexi-secret';
-    const [payload, sig] = token.split('.');
-    const { ts } = JSON.parse(Buffer.from(payload, 'base64').toString());
-    if (Date.now() - ts > 86400000) return false;
-    const crypto = require('crypto');
-    const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
-    return sig === expected;
-  } catch { return false; }
 }
