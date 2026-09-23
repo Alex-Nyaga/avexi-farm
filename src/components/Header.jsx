@@ -20,7 +20,9 @@ const Header = () => {
   return (
     <>
       <header>
-        <div className="hdr-logo"><span className="hdr-name">Avexi</span></div>
+        <div className="hdr-logo">
+          <img className="hdr-logo-image" src="/avexi-wordmark.svg" alt="Avexi Farm" />
+        </div>
         <div className="hdr-spacer" />
         <div className="hdr-farm">
           <div style={{ fontWeight: '600', fontSize: '.78rem' }}>Avelyne Wambui&apos;s Farm</div>

@@ -45,8 +45,6 @@ const MilkProductionChart = () => {
 
     const isDark = theme === 'dark';
     const textColor = isDark ? '#e8f0ea' : '#111c17';
-    const gridColor = isDark ? '#2a3d30' : '#d8e4db';
-
     const ctx = chartRef.current.getContext('2d');
     chartInstance.current = new Chart(ctx, {
       type: 'doughnut',
@@ -73,7 +71,7 @@ const MilkProductionChart = () => {
         maintainAspectRatio: true,
         plugins: {
           legend: {
-            position: 'right',
+            position: window.innerWidth < 620 ? 'bottom' : 'right',
             labels: {
               color: textColor,
               padding: 15,
@@ -128,7 +126,7 @@ const MilkProductionChart = () => {
   }
 
   return (
-    <div style={{ position: 'relative', height: '250px', width: '100%' }}>
+    <div className="chart-shell chart-shell--doughnut">
       <canvas ref={chartRef}></canvas>
     </div>
   );

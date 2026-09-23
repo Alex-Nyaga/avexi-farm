@@ -139,9 +139,10 @@ const MonthlyFinanceChart = () => {
           x: {
             ticks: {
               color: textColor,
-              font: {
-                size: 11
-              }
+              font: { size: 11 },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 6
             },
             grid: {
               color: gridColor,
@@ -200,12 +201,7 @@ const MonthlyFinanceChart = () => {
   }
 
   return (
-    <div style={{ 
-      position: 'relative', 
-      height: '350px', 
-      width: '100%',
-      padding: '10px'
-    }}>
+    <div className="chart-shell">
       <canvas ref={chartRef}></canvas>
     </div>
   );

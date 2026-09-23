@@ -66,7 +66,8 @@ const FinanceChart = () => {
             backgroundColor: 'rgba(42, 122, 58, 0.7)',
             borderColor: '#2a7a3a',
             borderWidth: 2,
-            borderRadius: 6
+            borderRadius: 5,
+            maxBarThickness: 36
           },
           {
             label: 'Expenses',
@@ -74,7 +75,8 @@ const FinanceChart = () => {
             backgroundColor: 'rgba(176, 48, 32, 0.7)',
             borderColor: '#b03020',
             borderWidth: 2,
-            borderRadius: 6
+            borderRadius: 5,
+            maxBarThickness: 36
           }
         ]
       },
@@ -112,9 +114,10 @@ const FinanceChart = () => {
           x: {
             ticks: {
               color: textColor,
-              font: {
-                size: 11
-              }
+              font: { size: 11 },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 6
             },
             grid: {
               color: gridColor,
@@ -173,12 +176,7 @@ const FinanceChart = () => {
   }
 
   return (
-    <div style={{ 
-      position: 'relative', 
-      height: '350px', 
-      width: '100%',
-      padding: '10px'
-    }}>
+    <div className="chart-shell">
       <canvas ref={chartRef}></canvas>
     </div>
   );

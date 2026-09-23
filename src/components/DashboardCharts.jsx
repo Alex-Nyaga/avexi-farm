@@ -50,8 +50,8 @@ const DashboardCharts = () => {
         datasets: [{
           data: data,
           backgroundColor: primaryColor,
-          borderRadius: 4,
-          barThickness: 28
+          maxBarThickness: 32,
+          borderRadius: 6
         }]
       },
       options: {
@@ -78,7 +78,9 @@ const DashboardCharts = () => {
           x: {
             ticks: {
               color: textColor,
-              font: { size: 11, weight: '400' }
+              font: { size: 11, weight: '500' },
+              maxRotation: 0,
+              autoSkip: false
             },
             grid: { display: false }
           },
@@ -123,7 +125,7 @@ const DashboardCharts = () => {
   }
 
   return (
-    <div style={{ position: 'relative', height: '200px', width: '100%' }}>
+    <div className="chart-shell chart-shell--compact">
       <canvas ref={chartRef}></canvas>
     </div>
   );
