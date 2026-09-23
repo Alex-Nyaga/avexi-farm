@@ -23,7 +23,6 @@ const Milk = () => {
   return (
     <div className="theme-cow">
       <div className="section-banner" style={{ background: 'var(--cow-l)' }}>
-        <span style={{ fontSize: '2rem' }}>🥛</span>
         <div>
           <h3 style={{ color: 'var(--cow-h)' }}>Milk Records</h3>
           <p style={{ color: 'var(--cow-b)' }}>Track daily milk production from your cows</p>
@@ -41,7 +40,7 @@ const Milk = () => {
         </div>
         {db.milkRecords.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">🥛</div>
+            <div className="empty-icon">Milk</div>
             No milk records yet.
           </div>
         ) : (

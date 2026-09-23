@@ -193,7 +193,7 @@ const MonthlyFinanceChart = () => {
   if (db.transactions.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-icon">📈</div>
+        <div className="empty-icon">Overview</div>
         No financial data to display monthly trends
       </div>
     );

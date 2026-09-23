@@ -99,7 +99,7 @@ const MilkForm = ({ isOpen, onClose, recordId }) => {
       <Modal isOpen={isOpen} onClose={onClose} title="Edit Milk Record">
         <div style={{ padding: '1rem' }}>
           <p style={{ color: 'var(--red)', marginBottom: '1rem' }}>
-            ⛔ You can only edit milk records within 12 hours of creation.
+            You can only edit milk records within 12 hours of creation.
           </p>
           <button className="btn btn-outline" onClick={onClose}>Close</button>
         </div>

@@ -203,7 +203,7 @@ const Reports = () => {
             style={{ cursor: 'pointer', marginBottom: 0 }} 
             onClick={generateLivestockPDF}
           >
-            <div className="card-title">🐄 Livestock Report</div>
+            <div className="card-title">Livestock Report</div>
             <div className="card-sub">Complete overview of cows and sheep</div>
           </div>
           <div 
@@ -211,7 +211,7 @@ const Reports = () => {
             style={{ cursor: 'pointer', marginBottom: 0 }} 
             onClick={generateMilkPDF}
           >
-            <div className="card-title">🥛 Milk Production Report</div>
+            <div className="card-title">Milk Production Report</div>
             <div className="card-sub">Daily milk records and totals</div>
           </div>
           <div 
@@ -219,7 +219,7 @@ const Reports = () => {
             style={{ cursor: 'pointer', marginBottom: 0 }} 
             onClick={generateCropPDF}
           >
-            <div className="card-title">🥔 Crop Report</div>
+            <div className="card-title">Crop Report</div>
             <div className="card-sub">Potato seasons and activities</div>
           </div>
           <div 
@@ -227,7 +227,7 @@ const Reports = () => {
             style={{ cursor: 'pointer', marginBottom: 0 }} 
             onClick={generateFinancialPDF}
           >
-            <div className="card-title">💰 Financial Report</div>
+            <div className="card-title">Financial Report</div>
             <div className="card-sub">Income, expenses, and balance</div>
           </div>
           <div 
@@ -235,7 +235,7 @@ const Reports = () => {
             style={{ cursor: 'pointer', marginBottom: 0 }} 
             onClick={generateStaffPDF}
           >
-            <div className="card-title">👤 Staff Report</div>
+            <div className="card-title">Staff Report</div>
             <div className="card-sub">Staff members and payments</div>
           </div>
         </div>

@@ -51,7 +51,6 @@ export const buildNotifications = (db) => {
       const a = animals[0];
       notifications.push({
         type: 'alert',
-        icon: '💊',
         title: `Deworming overdue: ${a.tag}`,
         text: `${a.kind} ${a.tag} — deworming was due ${a.daysAgo} day(s) ago!`,
         time: nowTs()
@@ -61,7 +60,6 @@ export const buildNotifications = (db) => {
       const maxDays = Math.max(...animals.map(a => a.daysAgo));
       notifications.push({
         type: 'alert',
-        icon: '💊',
         title: `Deworming overdue: ${animals.length} animals`,
         text: `${animals.length} animals share the same overdue deworming date (up to ${maxDays}d overdue): ${tags}. Deworm all together.`,
         time: nowTs()
@@ -74,7 +72,6 @@ export const buildNotifications = (db) => {
       const a = animals[0];
       notifications.push({
         type: 'warn',
-        icon: '⚠️',
         title: `Deworming due soon: ${a.tag}`,
         text: `${a.kind} ${a.tag} — deworming due in ${a.diff} day(s). Prepare medication.`,
         time: nowTs()
@@ -84,7 +81,6 @@ export const buildNotifications = (db) => {
       const minDays = Math.min(...animals.map(a => a.diff));
       notifications.push({
         type: 'warn',
-        icon: '⚠️',
         title: `Deworming due: ${animals.length} animals together`,
         text: `${animals.length} animals are all due for deworming in ${minDays} day(s): ${tags}. A great time to deworm the whole group at once!`,
         time: nowTs()
@@ -98,7 +94,6 @@ export const buildNotifications = (db) => {
       const a = animals[0];
       notifications.push({
         type: 'alert',
-        icon: '💉',
         title: `Vaccination overdue: ${a.tag}`,
         text: `${a.kind} ${a.tag} vaccination was due ${a.daysAgo} day(s) ago!`,
         time: nowTs()
@@ -108,7 +103,6 @@ export const buildNotifications = (db) => {
       const maxDays = Math.max(...animals.map(a => a.daysAgo));
       notifications.push({
         type: 'alert',
-        icon: '💉',
         title: `Vaccination overdue: ${animals.length} animals`,
         text: `${animals.length} animals share the same overdue vaccination date (up to ${maxDays}d overdue): ${tags}. Vaccinate all together.`,
         time: nowTs()
@@ -121,7 +115,6 @@ export const buildNotifications = (db) => {
       const a = animals[0];
       notifications.push({
         type: 'warn',
-        icon: '💉',
         title: `Vaccination due: ${a.tag}`,
         text: `${a.kind} ${a.tag} — due in ${a.diff} day(s).`,
         time: nowTs()
@@ -131,7 +124,6 @@ export const buildNotifications = (db) => {
       const minDays = Math.min(...animals.map(a => a.diff));
       notifications.push({
         type: 'warn',
-        icon: '💉',
         title: `Vaccination due: ${animals.length} animals together`,
         text: `${animals.length} animals all share the same upcoming vaccination date (in ${minDays} day(s)): ${tags}. Schedule a single vaccination session for all.`,
         time: nowTs()
@@ -151,7 +143,6 @@ export const buildNotifications = (db) => {
       if (spraysDone < spraysExpected) {
         notifications.push({
           type: 'warn',
-          icon: '🌿',
           title: `Spray due: ${s.plotName || s.plotId}`,
           text: `Week ${weeksSince} of growing. ${spraysDone}/${spraysExpected} sprays done.`,
           time: nowTs()
@@ -170,7 +161,6 @@ export const buildNotifications = (db) => {
       if (days >= 28) {
         notifications.push({
           type: 'info',
-          icon: '👤',
           title: `Salary due: ${s.name}`,
           text: `Last paid ${days} days ago. Monthly salary: KES ${Number(s.monthlySalary || 0).toLocaleString()}.`,
           time: nowTs()

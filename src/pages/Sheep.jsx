@@ -49,7 +49,6 @@ const Sheep = () => {
   return (
     <div className="theme-sheep">
       <div className="section-banner" style={{ background: 'var(--sheep-l)' }}>
-        <span style={{ fontSize: '2rem' }}>🐑</span>
         <div>
           <h3 style={{ color: 'var(--sheep-h)' }}>Sheep Management</h3>
           <p style={{ color: 'var(--sheep-b)' }}>Full livestock records — species, health, breeding, events</p>
@@ -62,7 +61,7 @@ const Sheep = () => {
             <>
               <button className="btn btn-primary btn-sm" onClick={handleAddSheep}>+ Add Sheep</button>
               <button className="btn btn-outline btn-sm" onClick={handleAddEvent}>+ Log Event</button>
-              <button className="btn btn-sm" style={{ background: '#bf8a3a', color: '#fff' }} onClick={() => handleSellAnimal(null)}>💰 Sell Animal</button>
+              <button className="btn btn-sm" style={{ background: '#bf8a3a', color: '#fff' }} onClick={() => handleSellAnimal(null)}>Sell Animal</button>
             </>
           ) : (
             <span className="badge bg-amber">View only — staff</span>
@@ -83,7 +82,7 @@ const Sheep = () => {
             </div>
             {liveSheep.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">🐑</div>
+                <div className="empty-icon">Sheep</div>
                 No sheep recorded yet.
               </div>
             ) : (
@@ -134,8 +133,8 @@ const Sheep = () => {
                           {isAdminOrOwner() ? (
                             <>
                               <button className="btn btn-outline btn-xs" onClick={() => handleEditSheep(sheep.id)}>Edit</button>
-                              <button className="btn btn-xs" style={{ background: '#bf8a3a', color: '#fff' }} onClick={() => handleSellAnimal(sheep.id)}>💰 Sell</button>
-                              <button className="btn btn-xs" style={{ background: 'var(--red)', color: '#fff' }} onClick={() => handleRecordDeath(sheep.id)}>💀 Death</button>
+                              <button className="btn btn-xs" style={{ background: '#bf8a3a', color: '#fff' }} onClick={() => handleSellAnimal(sheep.id)}>Sell</button>
+                              <button className="btn btn-xs" style={{ background: 'var(--red)', color: '#fff' }} onClick={() => handleRecordDeath(sheep.id)}>Death</button>
                             </>
                           ) : '—'}
                         </td>
@@ -174,7 +173,7 @@ const Sheep = () => {
                         <td><span className={`badge ${sheep.status === 'sold' ? 'bg-amber' : 'bg-red'}`}>{sheep.status}</span></td>
                         <td>
                           {isAdminOrOwner() ? (
-                            <button className="btn btn-outline btn-xs" onClick={() => handleEditSheep(sheep.id)}>✏️ Edit Info</button>
+                            <button className="btn btn-outline btn-xs" onClick={() => handleEditSheep(sheep.id)}>Edit Info</button>
                           ) : '—'}
                         </td>
                       </tr>
@@ -222,7 +221,7 @@ const Sheep = () => {
                         <td className="text-sm">{e.drug || '—'}</td>
                         <td className="text-sm">{e.cost ? 'KES ' + Number(e.cost).toLocaleString() : '—'}</td>
                         <td className="text-sm text-muted">{e.notes || '—'}</td>
-                        <td>{isAdminOrOwner() ? <button className="btn btn-outline btn-xs">✏️</button> : '—'}</td>
+                        <td>{isAdminOrOwner() ? <button className="btn btn-outline btn-xs">Edit</button> : '—'}</td>
                       </tr>
                     );
                   })

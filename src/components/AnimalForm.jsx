@@ -76,7 +76,7 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
     // Check for duplicates
     const duplicate = list.find(x => x.tag.trim().toLowerCase() === formData.tag.trim().toLowerCase() && x.id !== animalId);
     if (duplicate) {
-      alert(`⛔ A ${type} with the name/tag "${duplicate.tag}" already exists. Please use a unique name or tag.`);
+      alert(`A ${type} with the name/tag "${duplicate.tag}" already exists. Please use a unique name or tag.`);
       return;
     }
 

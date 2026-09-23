@@ -366,7 +366,7 @@ export const AppProvider = ({ children }) => {
   };
   const requireAdmin = (action) => {
     if (isAdminOrOwner()) return true;
-    alert(`⛔ Access denied.\n\nOnly admin or farm owner can ${action}.\nYour role (${currentUser.role}) has view-only access except for milk records.`);
+    alert(`Access denied.\n\nOnly admin or farm owner can ${action}.\nYour role (${currentUser.role}) has view-only access except for milk records.`);
     return false;
   };
 

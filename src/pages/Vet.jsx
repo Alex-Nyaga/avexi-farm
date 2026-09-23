@@ -82,7 +82,7 @@ const Vet = () => {
         <div className="card">
           <div className="card-hdr">
             <div className="card-title">Add Vet Visit</div>
-            <button className="btn btn-outline btn-xs" onClick={() => setShowVetForm(false)}>✕</button>
+            <button className="btn btn-outline btn-xs" onClick={() => setShowVetForm(false)}>Close</button>
           </div>
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
@@ -125,7 +125,7 @@ const Vet = () => {
         </div>
         {db.vetVisits.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">🏥</div>
+            <div className="empty-icon">Veterinary</div>
             No veterinary records yet.
           </div>
         ) : (

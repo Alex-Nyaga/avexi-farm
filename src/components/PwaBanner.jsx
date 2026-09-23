@@ -43,14 +43,13 @@ const PwaBanner = () => {
 
   return (
     <div className={`pwa-banner ${show ? 'show' : ''}`}>
-      <div className="pwa-icon">🌿</div>
       <div className="pwa-text">
         <strong>Install Avexi Farm</strong>
         <span>Add to your home screen for quick access</span>
       </div>
       <div className="pwa-actions">
         <button className="btn-pwa-install" onClick={handleInstall}>Install</button>
-        <button className="btn-pwa-dismiss" onClick={handleDismiss}>✕</button>
+        <button className="btn-pwa-dismiss" onClick={handleDismiss}>Not now</button>
       </div>
     </div>
   );

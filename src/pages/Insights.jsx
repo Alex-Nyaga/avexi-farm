@@ -18,14 +18,13 @@ const Insights = () => {
         </div>
         {notifications.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">📊</div>
-            All clear! No alerts at this time.
+            <div className="empty-icon">All Clear</div>
+            No alerts at this time.
           </div>
         ) : (
           <div>
             {notifications.map((n, idx) => (
               <div key={idx} className={`insight ${n.type === 'alert' ? 'alert' : n.type === 'warn' ? 'warn' : n.type === 'info' ? 'info' : 'ok'}`}>
-                <div className="insight-icon">{n.icon}</div>
                 <div>
                   <div className="insight-title">{n.title}</div>
                   <div className="insight-desc">{n.text}</div>

@@ -36,7 +36,6 @@ const Finance = () => {
   return (
     <div className="theme-finance">
       <div className="section-banner" style={{ background: 'var(--finance-l)' }}>
-        <span style={{ fontSize: '2rem' }}>💰</span>
         <div>
           <h3 style={{ color: 'var(--finance-h)' }}>Financial Management</h3>
           <p style={{ color: 'var(--finance-b)' }}>Track income, expenses, and farm finances</p>
@@ -93,7 +92,7 @@ const Finance = () => {
         </div>
         {db.transactions.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">💰</div>
+            <div className="empty-icon">Finance</div>
             No transactions recorded.
           </div>
         ) : (

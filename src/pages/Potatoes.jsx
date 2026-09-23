@@ -8,7 +8,6 @@ const Potatoes = () => {
   return (
     <div className="theme-potato">
       <div className="section-banner" style={{ background: 'var(--potato-l)' }}>
-        <span style={{ fontSize: '2rem' }}>🥔</span>
         <div>
           <h3 style={{ color: 'var(--potato-h)' }}>Potato Management</h3>
           <p style={{ color: 'var(--potato-b)' }}>Track potato crops, seasons, and activities</p>
@@ -31,7 +30,7 @@ const Potatoes = () => {
         </div>
         {db.plotSeasons.filter(s => s.status === 'active').length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">🥔</div>
+            <div className="empty-icon">Potatoes</div>
             No active potato seasons.
           </div>
         ) : (

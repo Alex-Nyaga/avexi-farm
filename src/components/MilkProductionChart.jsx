@@ -121,7 +121,7 @@ const MilkProductionChart = () => {
   if (db.milkRecords.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-icon">🥛</div>
+        <div className="empty-icon">Milk</div>
         No milk data to display chart
       </div>
     );

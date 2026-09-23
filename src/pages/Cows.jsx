@@ -114,7 +114,6 @@ const Cows = () => {
   return (
     <div className="theme-cow">
       <div className="section-banner" style={{ background: 'var(--cow-l)' }}>
-        <span style={{ fontSize: '2rem' }}>🐄</span>
         <div>
           <h3 style={{ color: 'var(--cow-h)' }}>Cow Management</h3>
           <p style={{ color: 'var(--cow-b)' }}>Full livestock records — species, health, breeding, events</p>
@@ -127,7 +126,7 @@ const Cows = () => {
             <>
               <button className="btn btn-primary btn-sm" onClick={handleAddCow}>+ Add Cow</button>
               <button className="btn btn-outline btn-sm" onClick={handleAddEvent}>+ Log Event</button>
-              <button className="btn btn-sm" style={{ background: '#2a7a3a', color: '#fff' }} onClick={() => handleSellAnimal(null)}>💰 Sell Animal</button>
+              <button className="btn btn-sm" style={{ background: '#2a7a3a', color: '#fff' }} onClick={() => handleSellAnimal(null)}>Sell Animal</button>
             </>
           ) : (
             <span className="badge bg-amber">View only — staff</span>
@@ -149,7 +148,7 @@ const Cows = () => {
             </div>
             {liveCows.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">🐄</div>
+                <div className="empty-icon">Cows</div>
                 No cows recorded yet.
               </div>
             ) : (
@@ -200,8 +199,8 @@ const Cows = () => {
                           {isAdminOrOwner() ? (
                             <>
                               <button className="btn btn-outline btn-xs" onClick={() => handleEditCow(cow.id)}>Edit</button>
-                              <button className="btn btn-xs" style={{ background: '#2a7a3a', color: '#fff' }} onClick={() => handleSellAnimal(cow.id)}>💰 Sell</button>
-                              <button className="btn btn-xs" style={{ background: 'var(--red)', color: '#fff' }} onClick={() => handleRecordDeath(cow.id)}>💀 Death</button>
+                              <button className="btn btn-xs" style={{ background: '#2a7a3a', color: '#fff' }} onClick={() => handleSellAnimal(cow.id)}>Sell</button>
+                              <button className="btn btn-xs" style={{ background: 'var(--red)', color: '#fff' }} onClick={() => handleRecordDeath(cow.id)}>Death</button>
                             </>
                           ) : '—'}
                         </td>
@@ -240,7 +239,7 @@ const Cows = () => {
                         <td><span className={`badge ${cow.status === 'sold' ? 'bg-amber' : 'bg-red'}`}>{cow.status}</span></td>
                         <td>
                           {isAdminOrOwner() ? (
-                            <button className="btn btn-outline btn-xs" onClick={() => handleEditCow(cow.id)}>✏️ Edit Info</button>
+                            <button className="btn btn-outline btn-xs" onClick={() => handleEditCow(cow.id)}>Edit Info</button>
                           ) : '—'}
                         </td>
                       </tr>
@@ -308,9 +307,9 @@ const Cows = () => {
                           {isAdminOrOwner() ? (
                             <>
                               <button className="btn btn-outline btn-xs" onClick={() => handleEditCalf(calf.id)}>Edit</button>
-                              <button className="btn btn-xs" style={{ background: 'var(--cow-h)', color: '#fff' }} onClick={() => handlePromoteCalf(calf.id)}>🐄 → Cow</button>
-                              <button className="btn btn-xs" style={{ background: '#2a7a3a', color: '#fff' }} onClick={() => handleSellAnimal(calf.id)}>💰 Sell</button>
-                              <button className="btn btn-xs" style={{ background: 'var(--red)', color: '#fff' }} onClick={() => handleRecordDeath(calf.id)}>💀</button>
+                              <button className="btn btn-xs" style={{ background: 'var(--cow-h)', color: '#fff' }} onClick={() => handlePromoteCalf(calf.id)}>Promote to Cow</button>
+                              <button className="btn btn-xs" style={{ background: '#2a7a3a', color: '#fff' }} onClick={() => handleSellAnimal(calf.id)}>Sell</button>
+                              <button className="btn btn-xs" style={{ background: 'var(--red)', color: '#fff' }} onClick={() => handleRecordDeath(calf.id)}>Death</button>
                             </>
                           ) : '—'}
                         </td>
@@ -356,7 +355,7 @@ const Cows = () => {
                           </td>
                           <td>
                             {isAdminOrOwner() ? (
-                              <button className="btn btn-outline btn-xs" onClick={() => handleDemoteCalf(calf.id)} title="Undo promotion — move back to Calves">↩ Undo</button>
+                              <button className="btn btn-outline btn-xs" onClick={() => handleDemoteCalf(calf.id)} title="Undo promotion — move back to Calves">Undo</button>
                             ) : '—'}
                           </td>
                         </tr>
@@ -395,7 +394,7 @@ const Cows = () => {
                         <td><span className={`badge ${calf.status === 'sold' ? 'bg-amber' : 'bg-red'}`}>{calf.status}</span></td>
                         <td>
                           {isAdminOrOwner() ? (
-                            <button className="btn btn-outline btn-xs" onClick={() => handleEditCalf(calf.id)}>✏️</button>
+                            <button className="btn btn-outline btn-xs" onClick={() => handleEditCalf(calf.id)}>Edit</button>
                           ) : '—'}
                         </td>
                       </tr>
@@ -443,7 +442,7 @@ const Cows = () => {
                         <td className="text-sm">{e.drug || '—'}</td>
                         <td className="text-sm">{e.cost ? 'KES ' + Number(e.cost).toLocaleString() : '—'}</td>
                         <td className="text-sm text-muted">{e.notes || '—'}</td>
-                        <td>{isAdminOrOwner() ? <button className="btn btn-outline btn-xs">✏️</button> : '—'}</td>
+                        <td>{isAdminOrOwner() ? <button className="btn btn-outline btn-xs">Edit</button> : '—'}</td>
                       </tr>
                     );
                   })

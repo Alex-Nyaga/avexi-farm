@@ -30,13 +30,13 @@ const Settings = () => {
               className={`btn ${theme === 'light' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => theme !== 'light' && toggleTheme()}
             >
-              ☀️ Light
+              Light
             </button>
             <button 
               className={`btn ${theme === 'dark' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => theme !== 'dark' && toggleTheme()}
             >
-              🌙 Dark
+              Dark
             </button>
           </div>
         </div>
@@ -54,15 +54,15 @@ const Settings = () => {
             color: syncStatus === 'online' ? 'var(--green)' : syncStatus === 'offline' ? 'var(--amber)' : 'var(--blue)',
             fontWeight: '600'
           }}>
-            {syncStatus === 'online' ? '● Connected to Cloud' : syncStatus === 'offline' ? '○ Local Mode' : '↻ Syncing...'}
+            {syncStatus === 'online' ? 'Connected to Cloud' : syncStatus === 'offline' ? 'Local Mode' : 'Syncing...'}
           </div>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button className="btn btn-primary" onClick={handleSync}>
-            📤 Sync to Cloud
+            Sync to Cloud
           </button>
           <button className="btn btn-outline" onClick={handleRefresh}>
-            📥 Refresh from Cloud
+            Refresh from Cloud
           </button>
         </div>
       </div>

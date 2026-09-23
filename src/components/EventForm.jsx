@@ -68,7 +68,7 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
     }
 
     if (formData.date > today()) {
-      alert('⛔ Date cannot be in the future.');
+      alert('Date cannot be in the future.');
       return;
     }
 

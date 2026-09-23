@@ -34,7 +34,7 @@ const Staff = () => {
         </div>
         {db.staff.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">👤</div>
+            <div className="empty-icon">Staff</div>
             No staff members recorded.
           </div>
         ) : (

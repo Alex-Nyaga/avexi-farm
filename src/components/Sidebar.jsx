@@ -5,36 +5,36 @@ const Sidebar = () => {
   const { currentSection, navigate, isStaff } = useApp();
 
   const navItems = [
-    { section: 'Overview', items: [
-      { id: 'dashboard', label: 'Dashboard', color: '#2a7a3a' }
+    { section: 'Farm today', items: [
+      { id: 'dashboard', label: 'Farm home', color: '#2a7a3a' }
     ]},
-    { section: 'Livestock', items: [
+    { section: 'Animals', items: [
       { id: 'cows', label: 'Cows', color: 'var(--cow-m)' },
       { id: 'sheep', label: 'Sheep', color: 'var(--sheep-m)' },
-      { id: 'milk', label: 'Milk Records', color: 'var(--cow-m)', opacity: 0.6 },
-      { id: 'vet', label: 'Veterinary', color: '#aaa' }
+      { id: 'milk', label: 'Milk', color: 'var(--cow-m)', opacity: 0.6 },
+      { id: 'vet', label: 'Animal health', color: '#78877c' }
     ]},
     { section: 'Crops', items: [
-      { id: 'potatoes', label: 'Potatoes', color: 'var(--potato-m)' }
+      { id: 'potatoes', label: 'Potatoes and planting', color: 'var(--potato-m)' }
     ]},
-    { section: 'People', items: [
-      { id: 'staff', label: 'Farm Staff', color: '#888' }
+    { section: 'Farm team', items: [
+      { id: 'staff', label: 'Workers', color: '#78877c' }
     ]},
-    { section: 'Finance', items: [
-      { id: 'finance', label: 'Transactions', color: 'var(--finance-m)', restricted: true }
+    { section: 'Farm money', items: [
+      { id: 'finance', label: 'Income and expenses', color: 'var(--finance-m)', restricted: true }
     ]},
-    { section: 'Reports', items: [
-      { id: 'insights', label: 'Insights', color: '#6a4aaf' },
-      { id: 'reports', label: 'Reports & PDF', color: '#4a6aaf' }
+    { section: 'Review', items: [
+      { id: 'insights', label: 'Farm insights', color: '#657ca8' },
+      { id: 'reports', label: 'Reports', color: '#657ca8' }
     ]},
-    { section: 'System', items: [
-      { id: 'settings', label: 'Settings', color: '#aaa' }
+    { section: 'Account', items: [
+      { id: 'settings', label: 'Farm settings', color: '#78877c' }
     ]}
   ];
 
   const handleNavClick = (item) => {
     if (item.restricted && isStaff()) {
-      alert("⛔ Access denied");
+      alert("Access denied");
       return;
     }
     navigate(item.id);

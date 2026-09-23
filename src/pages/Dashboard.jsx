@@ -13,12 +13,17 @@ const Dashboard = () => {
   const exp = db.transactions.filter(t => t.type === 'expense').reduce((a, b) => a + Number(b.amount), 0);
   const todayMilk = db.milkRecords.filter(r => r.date === today()).reduce((a, b) => a + Number(b.litres || 0), 0);
   const recentTx = db.transactions.slice(-6).reverse();
+  const firstName = currentUser?.name?.split(' ')[0] || 'there';
+  const priorityMessage = notifications.length > 0
+    ? `${notifications.length} item${notifications.length === 1 ? '' : 's'} need your attention today.`
+    : 'Your farm records are up to date. Keep recording today’s work.';
 
   return (
     <div>
       <div className="page-hdr">
         <div>
-          <div className="page-title">Good day, {currentUser?.name} 👋</div>
+          <div className="eyebrow">Farm home</div>
+          <div className="page-title">Good day, {firstName}</div>
           <div className="text-muted text-sm">
             {new Date().toLocaleDateString('en-KE', { 
               weekday: 'long', 
@@ -30,29 +35,41 @@ const Dashboard = () => {
         </div>
         <div className="page-actions">
           <button className="btn btn-outline btn-sm" onClick={() => navigate('reports')}>
-            📄 Reports
+            Reports
           </button>
         </div>
       </div>
 
+      <section className="today-panel" aria-label="Today on the farm">
+        <div>
+          <div className="today-panel-label">Today on the farm</div>
+          <p>{priorityMessage}</p>
+        </div>
+        <div className="today-actions">
+          <button className="btn btn-primary" onClick={() => navigate('milk')}>Record milk</button>
+          <button className="btn btn-outline" onClick={() => navigate('cows')}>View animals</button>
+          {!isStaff() && <button className="btn btn-outline" onClick={() => navigate('finance')}>Record money</button>}
+        </div>
+      </section>
+
       <div className="stat-grid">
         <div className="stat accent" style={{ '--accent-color': 'var(--cow-m)' }}>
-          <div className="stat-label">Live Cows</div>
+          <div className="stat-label">Cows</div>
           <div className="stat-val">{ac}</div>
           <div className="stat-sub">{db.calves.filter(c => c.status === 'alive').length} calves</div>
         </div>
         <div className="stat accent" style={{ '--accent-color': 'var(--sheep-m)' }}>
-          <div className="stat-label">Live Sheep</div>
+          <div className="stat-label">Sheep</div>
           <div className="stat-val">{as}</div>
           <div className="stat-sub">{db.sheep.filter(s => s.status === 'alive').length} total</div>
         </div>
         <div className="stat accent" style={{ '--accent-color': 'var(--potato-m)' }}>
-          <div className="stat-label">Active Plots</div>
+          <div className="stat-label">Growing plots</div>
           <div className="stat-val">{ap}</div>
           <div className="stat-sub">potato seasons</div>
         </div>
         <div className="stat accent" style={{ '--accent-color': 'var(--cow-m)' }}>
-          <div className="stat-label">Today's Milk</div>
+          <div className="stat-label">Milk today</div>
           <div className="stat-val">
             {todayMilk.toFixed(1)}<span style={{ fontSize: '1rem' }}>L</span>
           </div>
@@ -74,7 +91,7 @@ const Dashboard = () => {
           </div>
         )}
         <div className="stat">
-          <div className="stat-label">Notifications</div>
+          <div className="stat-label">Tasks to check</div>
           <div 
             className="stat-val" 
             style={{ color: notifications.length > 0 ? 'var(--red)' : 'var(--green)' }}
@@ -82,14 +99,17 @@ const Dashboard = () => {
             {notifications.length}
           </div>
           <div className="stat-sub">
-            {notifications.length > 0 ? 'action needed' : 'all clear'}
+            {notifications.length > 0 ? 'need attention' : 'nothing urgent'}
           </div>
         </div>
       </div>
 
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">Farm Overview</div>
+          <div>
+            <div className="card-title">Farm performance</div>
+            <div className="card-sub">Milk and money recorded over time</div>
+          </div>
         </div>
         <DashboardCharts />
       </div>
@@ -97,11 +117,13 @@ const Dashboard = () => {
       {notifications.length > 0 && (
         <div className="card">
           <div className="card-hdr">
-            <div className="card-title">⚠️ Active Alerts</div>
+            <div>
+              <div className="card-title">What needs attention</div>
+              <div className="card-sub">Review these before the end of the day</div>
+            </div>
           </div>
           {notifications.slice(0, 4).map((n, idx) => (
             <div key={idx} className={`insight ${n.type === 'alert' ? 'alert' : 'warn'}`}>
-              <div className="insight-icon">{n.icon}</div>
               <div>
                 <div className="insight-title">{n.title}</div>
                 <div className="insight-desc">{n.text}</div>
@@ -114,7 +136,10 @@ const Dashboard = () => {
       {!isStaff() && (
         <div className="card">
           <div className="card-hdr">
-            <div className="card-title">Recent Transactions</div>
+            <div>
+              <div className="card-title">Recent money records</div>
+              <div className="card-sub">Latest income and expenses</div>
+            </div>
             <button className="btn btn-outline btn-sm" onClick={() => navigate('finance')}>
               View all
             </button>
@@ -165,20 +190,8 @@ const Dashboard = () => {
           style={{ cursor: 'pointer' }} 
           onClick={() => navigate('cows')}
         >
-          <div 
-            style={{ 
-              background: 'var(--cow-l)', 
-              borderRadius: 'var(--radius-sm)', 
-              padding: '.75rem', 
-              textAlign: 'center', 
-              marginBottom: '.5rem', 
-              fontSize: '1.5rem' 
-            }}
-          >
-            🐄
-          </div>
-          <div style={{ fontWeight: '600', textAlign: 'center', color: 'var(--cow-h)' }}>
-            Manage Cows
+          <div className="dashboard-link">
+            Manage cows
           </div>
         </div>
         <div 
@@ -186,20 +199,8 @@ const Dashboard = () => {
           style={{ cursor: 'pointer' }} 
           onClick={() => navigate('sheep')}
         >
-          <div 
-            style={{ 
-              background: 'var(--sheep-l)', 
-              borderRadius: 'var(--radius-sm)', 
-              padding: '.75rem', 
-              textAlign: 'center', 
-              marginBottom: '.5rem', 
-              fontSize: '1.5rem' 
-            }}
-          >
-            🐑
-          </div>
-          <div style={{ fontWeight: '600', textAlign: 'center', color: 'var(--sheep-h)' }}>
-            Manage Sheep
+          <div className="dashboard-link">
+            Manage sheep
           </div>
         </div>
       </div>
