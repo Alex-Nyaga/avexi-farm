@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { buildNotifications } from '../utils/notifications';
 
 const AppContext = createContext();
@@ -15,7 +15,7 @@ export const AppProvider = ({ children }) => {
   // State
   const [currentUser, setCurrentUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [db, setDb] = useState({
+  const [db, setDbState] = useState({
     cows: [],
     cowEvents: [],
     sheep: [],
@@ -32,6 +32,11 @@ export const AppProvider = ({ children }) => {
     vetVisits: [],
     transactions: []
   });
+  const dbRef = useRef(db);
+  const setDb = useCallback((nextDb) => {
+    dbRef.current = nextDb;
+    setDbState(nextDb);
+  }, []);
   const [theme, setTheme] = useState('light');
   const [syncStatus, setSyncStatus] = useState('offline');
   const [notifications, setNotifications] = useState([]);
@@ -85,12 +90,13 @@ export const AppProvider = ({ children }) => {
 
   // Sync functions
   const sdb = useCallback(async () => {
-    localStorage.setItem(SK, JSON.stringify(db));
+    const data = dbRef.current;
+    localStorage.setItem(SK, JSON.stringify(data));
     setSyncStatus('syncing');
-    const ok = await supaSet(db);
+    const ok = await supaSet(data);
     setSyncStatus(ok ? 'online' : 'offline');
-    setNotifications(buildNotifications(db));
-  }, [db, supaSet]);
+    setNotifications(buildNotifications(data));
+  }, [supaSet]);
 
   const ldb = useCallback(async () => {
     setSyncStatus('syncing');

@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 
 const Insights = () => {
-  const { db, notifications } = useApp();
+  const { db, notifications, ldb } = useApp();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await ldb();
+    setRefreshing(false);
+  };
 
   return (
     <div>
       <div className="page-hdr">
         <div className="page-title">Insights</div>
         <div className="page-actions">
-          <button className="btn btn-outline btn-sm">Refresh</button>
+          <button className="btn btn-outline btn-sm" onClick={handleRefresh} disabled={refreshing}>
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
         </div>
       </div>
       <div className="card">

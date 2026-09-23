@@ -35,6 +35,7 @@ const Auth = () => {
     <div className="auth">
       <div className="auth-wrap">
         <div className="auth-logo">
+          <img src="/avexi-app-icon.svg" alt="" width="52" height="52" />
           <div>
             <div className="auth-name">Avexi</div>
             <div className="auth-sub-name">Farm Management</div>

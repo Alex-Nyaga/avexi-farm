@@ -442,7 +442,7 @@ const Cows = () => {
                         <td className="text-sm">{e.drug || '—'}</td>
                         <td className="text-sm">{e.cost ? 'KES ' + Number(e.cost).toLocaleString() : '—'}</td>
                         <td className="text-sm text-muted">{e.notes || '—'}</td>
-                        <td>{isAdminOrOwner() ? <button className="btn btn-outline btn-xs">Edit</button> : '—'}</td>
+                        <td>{isAdminOrOwner() ? 'Recorded' : '—'}</td>
                       </tr>
                     );
                   })
