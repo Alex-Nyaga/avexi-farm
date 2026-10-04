@@ -72,3 +72,33 @@ export const downloadChartPng = (buildConfig, { filename, title }) => {
     link.remove();
   });
 };
+
+// Renders a chart off-screen on a white background and returns a PNG data URL,
+// used to embed graphs inside PDF reports.
+export const chartToImage = ({ type = 'bar', labels, datasets, xTitle, yTitle, stacked = false, width = 900, height = 420 }) => {
+  if (!window.Chart) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const axis = (title) => ({
+    title: { display: Boolean(title), text: title, color: '#10201a', font: { size: 13, weight: '600' } },
+    ticks: { color: '#33463b', font: { size: 12 } },
+    grid: { color: 'rgba(17,28,23,.10)' },
+    stacked
+  });
+  const chart = new window.Chart(canvas.getContext('2d'), {
+    type,
+    data: { labels, datasets },
+    options: {
+      responsive: false,
+      animation: false,
+      devicePixelRatio: 2,
+      plugins: { legend: { labels: { color: '#10201a', usePointStyle: true } } },
+      scales: type === 'doughnut' || type === 'pie' ? {} : { x: axis(xTitle), y: { ...axis(yTitle), beginAtZero: true } }
+    },
+    plugins: [whiteBackgroundPlugin]
+  });
+  const url = chart.toBase64Image('image/png', 1);
+  chart.destroy();
+  return url;
+};

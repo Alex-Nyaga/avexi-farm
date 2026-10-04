@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
+import SelectOrOther from './SelectOrOther';
+import { getEnterprises } from '../utils/enterprises';
 import { useApp } from '../context/AppContext';
 import { uid, today } from '../utils/helpers';
 
@@ -32,8 +34,12 @@ const FinanceForm = ({ isOpen, onClose, transactionId, transactionType }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.amount) {
-      alert('Amount is required');
+    if (!formData.amount || Number(formData.amount) <= 0) {
+      alert('Enter an amount greater than zero');
+      return;
+    }
+    if (formData.date > today()) {
+      alert('The date cannot be in the future.');
       return;
     }
 
@@ -85,8 +91,10 @@ const FinanceForm = ({ isOpen, onClose, transactionId, transactionType }) => {
   if (!isAdminOrOwner()) return null;
 
   const categories = formData.type === 'income' 
-    ? ['Milk Sales', 'Animal Sale', 'Crop Sale', 'Other Income']
-    : ['Feed', 'Veterinary', 'Staff Salary', 'Equipment', 'Maintenance', 'Other Expense'];
+    ? ['Milk Sales', 'Animal Sale', 'Crop Sale', 'Eggs Sale', 'Produce Sale']
+    : ['Feed', 'Veterinary', 'Staff Salary', 'Equipment', 'Maintenance', 'Seeds & Fertilizer', 'Transport'];
+
+  const sources = ['General', ...getEnterprises(db).map((e) => e.name)];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={transaction ? 'Edit Transaction' : `Add ${transactionType === 'income' ? 'Income' : 'Expense'}`}>
@@ -107,17 +115,8 @@ const FinanceForm = ({ isOpen, onClose, transactionId, transactionType }) => {
             <label>Amount (KES) *</label>
             <input type="number" name="amount" value={formData.amount || ''} onChange={handleChange} placeholder="0" required />
           </div>
-          <div className="fg">
-            <label>Category</label>
-            <select name="category" value={formData.category || ''} onChange={handleChange}>
-              <option value="">Select...</option>
-              {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
-          </div>
-          <div className="fg">
-            <label>Source</label>
-            <input name="source" value={formData.source || ''} onChange={handleChange} placeholder="e.g. Cows, Sheep, Crops" />
-          </div>
+          <SelectOrOther label="Category" name="category" value={formData.category} onChange={handleChange} options={categories} />
+          <SelectOrOther label="Source / Enterprise" name="source" value={formData.source} onChange={handleChange} options={sources} />
         </div>
 
         <div className="fg fg-full mt1">

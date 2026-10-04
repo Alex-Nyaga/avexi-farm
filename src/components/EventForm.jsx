@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
+import SelectOrOther from './SelectOrOther';
 import { useApp } from '../context/AppContext';
 import { uid, today } from '../utils/helpers';
 
@@ -39,9 +40,13 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
     return alive;
   };
 
+  const drugs = ['Ivermectin', 'Albendazole', 'Oxytetracycline', 'Penicillin-Streptomycin', 'Copper sulphate', 'Dexamethasone', 'Multivitamin'];
+  const vaccines = ['FMD', 'Lumpy skin disease', 'Anthrax', 'Black quarter', 'Brucellosis', 'East Coast Fever', 'Rift Valley Fever', 'PPR', 'Sheep pox'];
+  const causes = ['Disease', 'Injury', 'Bloat', 'Birth complications', 'Poisoning', 'Predator', 'Old age', 'Unknown'];
+
   const events = isCow 
-    ? ['Health check', 'Deworming', 'Vaccination', 'Treatment', 'Weight recorded', 'Milking issue', 'Calving', 'Breeding/AI', 'Pregnancy check', 'Dry off', 'Sold', 'Death', 'Other']
-    : ['Health check', 'Deworming', 'Vaccination', 'Treatment', 'Weight recorded', 'Shearing', 'Lambing', 'Breeding', 'Sold', 'Death', 'Other'];
+    ? ['Health check', 'Deworming', 'Vaccination', 'Treatment', 'Weight recorded', 'Milking issue', 'Calving', 'Breeding/AI', 'Pregnancy check', 'Dry off', 'Sold', 'Death']
+    : ['Health check', 'Deworming', 'Vaccination', 'Treatment', 'Weight recorded', 'Shearing', 'Lambing', 'Breeding', 'Sold', 'Death'];
 
   useEffect(() => {
     if (preselectedAnimalId) {
@@ -69,6 +74,16 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
 
     if (formData.date > today()) {
       alert('Date cannot be in the future.');
+      return;
+    }
+
+    const animalRec = [...db.cows, ...db.calves, ...db.sheep].find((a) => a.id === formData.animalId);
+    if (animalRec?.dob && formData.date < animalRec.dob) {
+      alert('The event date cannot be before the animal was born (' + animalRec.dob + ').');
+      return;
+    }
+    if (formData.nextVaccination && formData.nextVaccination <= formData.date) {
+      alert('Next vaccination must be after this event date.');
       return;
     }
 
@@ -234,19 +249,10 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
           </div>
           <div className="fg">
             <label>Date *</label>
-            <input type="date" name="date" value={formData.date} onChange={handleChange} max={today()} required />
+            <input type="date" name="date" value={formData.date} onChange={handleChange} max={today()} min={([...db.cows, ...db.calves, ...db.sheep].find((a) => a.id === formData.animalId) || {}).dob || undefined} required />
           </div>
-          <div className="fg">
-            <label>Event Type *</label>
-            <select name="eventType" value={formData.eventType} onChange={handleChange} required>
-              <option value="">Select...</option>
-              {events.map(e => <option key={e} value={e}>{e}</option>)}
-            </select>
-          </div>
-          <div className="fg">
-            <label>Drug / Product</label>
-            <input name="drug" value={formData.drug || ''} onChange={handleChange} placeholder="e.g. Ivermectin, Copper Sulphate" />
-          </div>
+          <SelectOrOther label="Event Type" required name="eventType" value={formData.eventType} onChange={handleChange} options={events} />
+          <SelectOrOther label="Drug / Product" name="drug" value={formData.drug} onChange={handleChange} options={drugs} />
           <div className="fg">
             <label>Dosage / Quantity</label>
             <input name="dosage" value={formData.dosage || ''} onChange={handleChange} placeholder="e.g. 5ml, 2 tablets" />
@@ -272,10 +278,7 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
         )}
 
         {formData.eventType === 'Death' && (
-          <div className="fg fg-full mt1">
-            <label>Cause of Death *</label>
-            <input name="cause" value={formData.cause || ''} onChange={handleChange} placeholder="e.g. Disease, Injury, Unknown" required />
-          </div>
+          <div className="mt1"><SelectOrOther label="Cause of Death" required name="cause" value={formData.cause} onChange={handleChange} options={causes} /></div>
         )}
 
         {(formData.eventType === 'Calving' || formData.eventType === 'Lambing') && (
@@ -307,10 +310,7 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
 
         {formData.eventType === 'Vaccination' && (
           <div className="form-grid mt1">
-            <div className="fg">
-              <label>Vaccine Type</label>
-              <input name="vaccineType" value={formData.vaccineType || ''} onChange={handleChange} placeholder="e.g. FMD vaccine" />
-            </div>
+            <SelectOrOther label="Vaccine Type" name="vaccineType" value={formData.vaccineType} onChange={handleChange} options={vaccines} />
             <div className="fg">
               <label>Next vaccination date</label>
               <input type="date" name="nextVaccination" value={formData.nextVaccination || ''} onChange={handleChange} />

@@ -1,44 +1,48 @@
-// ═══════════════════════════════════════════════════
-//  AVEXI FARM — Service Worker
-//  Makes the app installable as a standalone Android app.
-//  Also caches the app so it loads fast even on slow data.
-// ═══════════════════════════════════════════════════
+// Avexi Farm service worker: makes the app open offline.
+// - App shell and built assets are cached as they are used.
+// - /api requests are never cached (data is kept locally by the app itself and synced when back online).
+const CACHE = 'avexi-v4';
+const SHELL = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png', '/avexi-app-icon.svg', '/favicon.svg'];
 
-const CACHE = 'avexi-v3';
-const PRECACHE = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
-
-// Install — cache app shell
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(PRECACHE)).catch(() => {})
-  );
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => {}));
   self.skipWaiting();
 });
 
-// Activate — remove old caches
-self.addEventListener('activate', e => {
+self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
   );
   self.clients.claim();
 });
 
-// Fetch — cache first for app shell, network first for Supabase/CDN
-self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
+self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
-  // Always go to network for Supabase, CDNs, fonts
-  const alwaysNetwork = ['supabase.co','cdnjs.cloudflare.com','googleapis.com','jsdelivr.net','gstatic.com'];
-  if (alwaysNetwork.some(h => url.hostname.includes(h))) {
-    return; // let browser handle normally
-  }
-
-  // For our own files: try cache, fall back to network
-  if (e.request.method === 'GET') {
+  // Pages: network first so updates arrive, fall back to the cached shell offline.
+  if (req.mode === 'navigate') {
     e.respondWith(
-      caches.match(e.request).then(cached => cached || fetch(e.request))
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put('/index.html', copy));
+          return res;
+        })
+        .catch(() => caches.match('/index.html').then((r) => r || caches.match('/')))
     );
+    return;
   }
+
+  // Static files: cache first, fill the cache on first use.
+  e.respondWith(
+    caches.match(req).then((cached) => cached || fetch(req).then((res) => {
+      if (res.ok) {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy));
+      }
+      return res;
+    }))
+  );
 });

@@ -16,10 +16,14 @@ import Finance from './pages/Finance';
 import Insights from './pages/Insights';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import Enterprises from './pages/Enterprises';
+import Enterprise from './pages/Enterprise';
+import Onboarding from './components/Onboarding';
+import { needsOnboarding } from './utils/enterprises';
 import './index.css';
 
 const AppContent = () => {
-  const { currentUser, currentSection, checkSession } = useApp();
+  const { currentUser, currentSection, checkSession, db, dbLoaded, loadFailed, retryLoad, doLogout, isAdminOrOwner, isStaff } = useApp();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
@@ -35,8 +39,35 @@ const AppContent = () => {
     return <Auth />;
   }
 
+  if (!dbLoaded) {
+    return <div className="boot">Loading your farm…</div>;
+  }
+
+  if (loadFailed) {
+    return (
+      <div className="boot">
+        <div className="boot-card">
+          <h2>Can’t reach your farm data</h2>
+          <p className="text-muted">You appear to be offline and nothing is saved on this device yet. Reconnect and try again.</p>
+          <div className="modal-actions">
+            <button className="btn btn-primary" onClick={retryLoad}>Try again</button>
+            <button className="btn btn-outline" onClick={doLogout}>Sign out</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAdminOrOwner() && needsOnboarding(db)) {
+    return <Onboarding />;
+  }
+
   const renderPage = () => {
+    if (currentSection.startsWith('ent:')) return <Enterprise enterpriseId={currentSection.slice(4)} />;
+    if (isStaff() && ['finance', 'enterprises'].includes(currentSection)) return <Dashboard />;
     switch (currentSection) {
+      case 'enterprises':
+        return <Enterprises />;
       case 'dashboard':
         return <Dashboard />;
       case 'cows':

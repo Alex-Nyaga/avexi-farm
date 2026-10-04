@@ -1,9 +1,10 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { navGroups } from '../utils/navItems';
+import { buildNavGroups } from '../utils/navItems';
 
 const Sidebar = () => {
-  const { currentSection, navigate, isStaff } = useApp();
+  const { currentSection, navigate, isStaff, db } = useApp();
+  const navGroups = buildNavGroups(db);
 
   const handleNavClick = (item) => {
     if (item.restricted && isStaff()) {

@@ -17,8 +17,10 @@ const SelectOrOther = ({
   const knownValues = options.map((o) => (typeof o === 'string' ? o : o.value));
   const [showOther, setShowOther] = useState(Boolean(value) && !knownValues.includes(value));
 
+  // A value that isn't in the list (e.g. loaded from a saved record) means "Other" is in use.
+  // Never switch back to false here: picking Other sets an empty value on purpose.
   useEffect(() => {
-    setShowOther(Boolean(value) && !knownValues.includes(value));
+    if (value && !knownValues.includes(value)) setShowOther(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 

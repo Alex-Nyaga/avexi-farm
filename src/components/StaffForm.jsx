@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
+import SelectOrOther from './SelectOrOther';
 import { useApp } from '../context/AppContext';
 import { uid, today } from '../utils/helpers';
 
@@ -8,6 +9,8 @@ const StaffForm = ({ isOpen, onClose, staffId }) => {
   const [formData, setFormData] = useState({});
 
   const staff = staffId ? db.staff.find(s => s.id === staffId) : null;
+
+  const roles = ['Farm Manager', 'Herdsman', 'Milker', 'Farm Hand', 'Poultry Attendant', 'Driver', 'Security', 'Casual Labourer'];
 
   useEffect(() => {
     if (staff) {
@@ -38,10 +41,20 @@ const StaffForm = ({ isOpen, onClose, staffId }) => {
       return;
     }
 
+    if (formData.status === 'inactive' && !formData.leftDate) {
+      alert('Enter the date this staff member left.');
+      return;
+    }
+    if (formData.leftDate && formData.startDate && formData.leftDate < formData.startDate) {
+      alert('The leaving date cannot be before the start date.');
+      return;
+    }
+
     const newStaff = {
       ...formData,
       id: staffId || uid(),
       monthlySalary: Number(formData.monthlySalary) || 0,
+      leftDate: formData.status === 'inactive' ? formData.leftDate : '',
       createdAt: staff?.createdAt || today()
     };
 
@@ -93,10 +106,7 @@ const StaffForm = ({ isOpen, onClose, staffId }) => {
             <label>Name *</label>
             <input name="name" value={formData.name || ''} onChange={handleChange} placeholder="Full name" required />
           </div>
-          <div className="fg">
-            <label>Role</label>
-            <input name="role" value={formData.role || ''} onChange={handleChange} placeholder="e.g. Herdsman, Farm Manager" />
-          </div>
+          <SelectOrOther label="Role" name="role" value={formData.role} onChange={handleChange} options={roles} />
           <div className="fg">
             <label>Phone</label>
             <input name="phone" value={formData.phone || ''} onChange={handleChange} placeholder="07XXXXXXXX" />
@@ -112,6 +122,12 @@ const StaffForm = ({ isOpen, onClose, staffId }) => {
               <option value="inactive">Inactive</option>
             </select>
           </div>
+          {formData.status === 'inactive' && (
+            <div className="fg">
+              <label>Date Left *</label>
+              <input type="date" name="leftDate" value={formData.leftDate || ''} onChange={handleChange} min={formData.startDate || undefined} max={today()} required />
+            </div>
+          )}
           <div className="fg">
             <label>Start Date</label>
             <input type="date" name="startDate" value={formData.startDate || today()} onChange={handleChange} />

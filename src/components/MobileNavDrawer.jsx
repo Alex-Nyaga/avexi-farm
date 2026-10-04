@@ -1,12 +1,13 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { navGroups } from '../utils/navItems';
+import { buildNavGroups } from '../utils/navItems';
 
 // Mobile-only slide-in menu, opened via the header's hamburger button.
 // Replaces the old bottom nav bar (which crammed 11 items into a
 // horizontally-scrolling strip that got clipped on small screens).
 const MobileNavDrawer = ({ open, onClose }) => {
-  const { currentSection, navigate, isStaff } = useApp();
+  const { currentSection, navigate, isStaff, db } = useApp();
+  const navGroups = buildNavGroups(db);
 
   const handleNavClick = (item) => {
     if (item.restricted && isStaff()) {

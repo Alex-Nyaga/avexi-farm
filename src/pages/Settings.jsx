@@ -1,8 +1,12 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import { playAlarm, alarmEnabled, setAlarmEnabled, unlockAudio } from '../utils/alarm';
 
 const Settings = () => {
   const { currentUser, theme, toggleTheme, syncStatus, ldb, sdb } = useApp();
+
+  const [alarmOn, setAlarmOn] = React.useState(alarmEnabled());
+  const toggleAlarm = (on) => { setAlarmEnabled(on); setAlarmOn(on); if (on) { unlockAudio(); playAlarm(); } };
 
   const handleSync = async () => {
     await sdb();
@@ -38,6 +42,19 @@ const Settings = () => {
             >
               Dark
             </button>
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        <div className="card-hdr">
+          <div className="card-title">Alerts</div>
+        </div>
+        <div className="fg" style={{ marginBottom: '1rem' }}>
+          <label>Alarm sound (follows your device volume)</label>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button className={`btn ${alarmOn ? 'btn-primary' : 'btn-outline'}`} onClick={() => toggleAlarm(true)}>On</button>
+            <button className={`btn ${!alarmOn ? 'btn-primary' : 'btn-outline'}`} onClick={() => toggleAlarm(false)}>Off</button>
+            <button className="btn btn-outline" onClick={() => { unlockAudio(); playAlarm(); }} disabled={!alarmOn}>Test sound</button>
           </div>
         </div>
       </div>

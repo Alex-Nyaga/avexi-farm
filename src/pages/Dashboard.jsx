@@ -13,7 +13,9 @@ const Dashboard = () => {
   const exp = db.transactions.filter(t => t.type === 'expense').reduce((a, b) => a + Number(b.amount), 0);
   const todayMilk = db.milkRecords.filter(r => r.date === today()).reduce((a, b) => a + Number(b.litres || 0), 0);
   const recentTx = db.transactions.slice(-6).reverse();
-  const firstName = currentUser?.name?.split(' ')[0] || 'there';
+  const displayName = currentUser?.username || currentUser?.name?.split(' ')[0] || 'there';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const priorityMessage = notifications.length > 0
     ? `${notifications.length} item${notifications.length === 1 ? '' : 's'} need your attention today.`
     : 'Your farm records are up to date. Keep recording today’s work.';
@@ -23,7 +25,7 @@ const Dashboard = () => {
       <div className="page-hdr">
         <div>
           <div className="eyebrow">Farm home</div>
-          <div className="page-title">Good day, {firstName}</div>
+          <div className="page-title">{greeting}, {displayName}</div>
           <div className="text-muted text-sm">
             {new Date().toLocaleDateString('en-KE', { 
               weekday: 'long', 

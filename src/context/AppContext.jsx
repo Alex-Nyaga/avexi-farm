@@ -1,7 +1,94 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { buildNotifications } from '../utils/notifications';
+import { playAlarm, unlockAudio } from '../utils/alarm';
 
 const DEMO_MODE = __DEMO_MODE__;
+
+// Sample data shown only in demo mode.
+const buildSampleData = () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const sampleData = {
+    cows: [
+      { id: 'cow1', tag: 'C-001', species: 'Friesian', breed: 'Friesian', colour: 'Black & white', sex: 'Female', dob: '2022-01-15', status: 'alive', weight: 450, avgMilkPerDay: 15, lactation: 'Milking' },
+      { id: 'cow2', tag: 'C-002', species: 'Jersey', breed: 'Jersey', colour: 'Brown', sex: 'Female', dob: '2022-03-20', status: 'alive', weight: 380, avgMilkPerDay: 12, lactation: 'Milking' },
+      { id: 'cow3', tag: 'C-003', species: 'Ayrshire', breed: 'Ayrshire', colour: 'Red & white', sex: 'Female', dob: '2021-11-10', status: 'alive', weight: 420, avgMilkPerDay: 14, lactation: 'Milking' },
+      { id: 'cow4', tag: 'C-004', species: 'Friesian', breed: 'Friesian', colour: 'Black & white', sex: 'Female', dob: '2023-02-05', status: 'alive', weight: 350, avgMilkPerDay: 10, lactation: 'Milking' },
+      { id: 'cow5', tag: 'C-005', species: 'Jersey', breed: 'Jersey', colour: 'Brown', sex: 'Female', dob: '2022-08-15', status: 'alive', weight: 365, avgMilkPerDay: 11, lactation: 'Milking' }
+    ],
+    cowEvents: [],
+    sheep: [
+      { id: 'sheep1', tag: 'S-001', species: 'Dorper', breed: 'Dorper', colour: 'White', sex: 'Female', dob: '2023-03-20', status: 'alive', weight: 65 },
+      { id: 'sheep2', tag: 'S-002', species: 'Merino', breed: 'Merino', colour: 'White', sex: 'Female', dob: '2023-05-10', status: 'alive', weight: 55 },
+      { id: 'sheep3', tag: 'S-003', species: 'Dorper', breed: 'Dorper', colour: 'White', sex: 'Male', dob: '2023-04-15', status: 'alive', weight: 70 },
+      { id: 'sheep4', tag: 'S-004', species: 'Hampshire', breed: 'Hampshire', colour: 'Black', sex: 'Female', dob: '2023-06-01', status: 'alive', weight: 60 }
+    ],
+    sheepEvents: [],
+    milkRecords: [
+      { id: 'mr1', cowId: 'cow1', cowTag: 'C-001', date: '2024-09-20', am: 8, pm: 7, litres: 15 },
+      { id: 'mr2', cowId: 'cow2', cowTag: 'C-002', date: '2024-09-20', am: 6, pm: 6, litres: 12 },
+      { id: 'mr3', cowId: 'cow3', cowTag: 'C-003', date: '2024-09-20', am: 7, pm: 7, litres: 14 },
+      { id: 'mr4', cowId: 'cow4', cowTag: 'C-004', date: '2024-09-20', am: 5, pm: 5, litres: 10 },
+      { id: 'mr5', cowId: 'cow5', cowTag: 'C-005', date: '2024-09-20', am: 6, pm: 5, litres: 11 },
+      { id: 'mr6', cowId: 'cow1', cowTag: 'C-001', date: '2024-09-21', am: 8, pm: 7, litres: 15 },
+      { id: 'mr7', cowId: 'cow2', cowTag: 'C-002', date: '2024-09-21', am: 6, pm: 6, litres: 12 },
+      { id: 'mr8', cowId: 'cow3', cowTag: 'C-003', date: '2024-09-21', am: 7, pm: 7, litres: 14 },
+      { id: 'mr9', cowId: 'cow4', cowTag: 'C-004', date: '2024-09-21', am: 5, pm: 5, litres: 10 },
+      { id: 'mr10', cowId: 'cow5', cowTag: 'C-005', date: '2024-09-21', am: 6, pm: 5, litres: 11 },
+      { id: 'mr11', cowId: 'cow1', cowTag: 'C-001', date: '2024-09-22', am: 8, pm: 7, litres: 15 },
+      { id: 'mr12', cowId: 'cow2', cowTag: 'C-002', date: '2024-09-22', am: 6, pm: 6, litres: 12 },
+      { id: 'mr13', cowId: 'cow3', cowTag: 'C-003', date: '2024-09-22', am: 7, pm: 7, litres: 14 },
+      { id: 'mr14', cowId: 'cow4', cowTag: 'C-004', date: '2024-09-22', am: 5, pm: 5, litres: 10 },
+      { id: 'mr15', cowId: 'cow5', cowTag: 'C-005', date: '2024-09-22', am: 6, pm: 5, litres: 11 },
+      { id: 'mr16', cowId: 'cow1', cowTag: 'C-001', date: '2024-09-23', am: 8, pm: 7, litres: 15 },
+      { id: 'mr17', cowId: 'cow2', cowTag: 'C-002', date: '2024-09-23', am: 6, pm: 6, litres: 12 },
+      { id: 'mr18', cowId: 'cow3', cowTag: 'C-003', date: '2024-09-23', am: 7, pm: 7, litres: 14 },
+      { id: 'mr19', cowId: 'cow4', cowTag: 'C-004', date: '2024-09-23', am: 5, pm: 5, litres: 10 },
+      { id: 'mr20', cowId: 'cow5', cowTag: 'C-005', date: '2024-09-23', am: 6, pm: 5, litres: 11 }
+    ],
+    calves: [
+      { id: 'calf1', tag: 'CF-001', species: 'Friesian', breed: 'Friesian', colour: 'Black & white', sex: 'Female', dob: '2024-06-15', status: 'alive', weight: 45, damId: 'cow1', damTag: 'C-001' },
+      { id: 'calf2', tag: 'CF-002', species: 'Jersey', breed: 'Jersey', colour: 'Brown', sex: 'Male', dob: '2024-07-20', status: 'alive', weight: 38, damId: 'cow2', damTag: 'C-002' }
+    ],
+    plots: [],
+    plotSeasons: [
+      { id: 'plot1', plotId: 'P-001', plotName: 'Plot A', variety: 'Shangi', plantedDate: '2024-03-15', status: 'active' },
+      { id: 'plot2', plotId: 'P-002', plotName: 'Plot B', variety: 'Asante', plantedDate: '2024-04-10', status: 'active' }
+    ],
+    cropActivities: [],
+    sprayLog: [],
+    boosterLog: [],
+    staff: [
+      { id: 'staff1', name: 'John Kamau', role: 'Herdsman', phone: '0712345678', monthlySalary: 25000, status: 'active', startDate: '2023-01-15' },
+      { id: 'staff2', name: 'Mary Wanjiku', role: 'Farm Manager', phone: '0723456789', monthlySalary: 45000, status: 'active', startDate: '2022-06-01' },
+      { id: 'staff3', name: 'Peter Ochieng', role: 'Field Worker', phone: '0734567890', monthlySalary: 20000, status: 'active', startDate: '2023-08-20' }
+    ],
+    staffPayments: [],
+    vetVisits: [],
+    transactions: [
+      { id: 'tx1', type: 'expense', date: '2024-09-01', amount: 25000, category: 'Feed', desc: 'Cattle feed purchase - September' },
+      { id: 'tx2', type: 'income', date: '2024-09-05', amount: 45000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
+      { id: 'tx3', type: 'expense', date: '2024-09-10', amount: 15000, category: 'Veterinary', desc: 'Vet visit - routine checkup' },
+      { id: 'tx4', type: 'income', date: '2024-09-15', amount: 48000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
+      { id: 'tx5', type: 'expense', date: '2024-09-18', amount: 8000, category: 'Equipment', desc: 'Fencing materials' },
+      { id: 'tx6', type: 'income', date: '2024-09-20', amount: 46000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
+      { id: 'tx7', type: 'expense', date: '2024-08-25', amount: 90000, category: 'Staff Salary', desc: 'August staff salaries' },
+      { id: 'tx8', type: 'income', date: '2024-08-28', amount: 44000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
+      { id: 'tx9', type: 'expense', date: '2024-08-15', amount: 22000, category: 'Feed', desc: 'Cattle feed purchase - August' },
+      { id: 'tx10', type: 'income', date: '2024-08-20', amount: 43000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
+      { id: 'tx11', type: 'expense', date: '2024-07-25', amount: 90000, category: 'Staff Salary', desc: 'July staff salaries' },
+      { id: 'tx12', type: 'income', date: '2024-07-28', amount: 42000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
+      { id: 'tx13', type: 'expense', date: '2024-07-15', amount: 20000, category: 'Feed', desc: 'Cattle feed purchase - July' },
+      { id: 'tx14', type: 'income', date: '2024-07-20', amount: 41000, category: 'Milk Sales', desc: 'Milk sales to cooperative' }
+    ]
+  };
+  return sampleData;
+};
+
+const emptyDb = () => ({
+  cows: [], cowEvents: [], sheep: [], sheepEvents: [], milkRecords: [], calves: [],
+  plots: [], plotSeasons: [], cropActivities: [], sprayLog: [], boosterLog: [],
+  staff: [], staffPayments: [], vetVisits: [], transactions: [], enterpriseRecords: []
+});
 
 const AppContext = createContext();
 
@@ -16,7 +103,12 @@ export const useApp = () => {
 export const AppProvider = ({ children }) => {
   // State
   const [currentUser, setCurrentUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const [token, setTokenState] = useState(null);
+  const tokenRef = useRef(null);
+  const setToken = useCallback((t) => {
+    tokenRef.current = t;
+    setTokenState(t);
+  }, []);
   const [db, setDbState] = useState({
     cows: [],
     cowEvents: [],
@@ -42,9 +134,10 @@ export const AppProvider = ({ children }) => {
   const [theme, setTheme] = useState('light');
   const [syncStatus, setSyncStatus] = useState('offline');
   const [notifications, setNotifications] = useState([]);
+  const [dbLoaded, setDbLoaded] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [currentSection, setCurrentSection] = useState('dashboard');
 
-  const SK = 'avexi_v3';
 
   // Theme management
   useEffect(() => {
@@ -62,23 +155,31 @@ export const AppProvider = ({ children }) => {
 
   // Auth headers
   const authHeaders = useCallback(() => {
-    return { 'Content-Type': 'application/json', 'x-avexi-token': token || '' };
-  }, [token]);
+    return { 'Content-Type': 'application/json', 'x-avexi-token': tokenRef.current || '' };
+  }, []);
 
   // Database helpers
+  const skRef = useRef('avexi_v3');
+  const savingRef = useRef(false);
+  const resaveRef = useRef(false);
+  const pendingKey = () => skRef.current + '_pending';
+  const onlineNow = () => typeof navigator === 'undefined' || navigator.onLine !== false;
+
+  // Returns { ok, data } so "cloud has no row yet" is distinguishable from "cloud unreachable".
   const supaGet = useCallback(async () => {
-    if (DEMO_MODE) return null;
+    if (DEMO_MODE || !onlineNow()) return { ok: false, data: null };
     try {
       const res = await fetch('/api/db', { headers: authHeaders() });
+      if (!res.ok) return { ok: false, data: null };
       const json = await res.json();
-      return json.data || null;
+      return { ok: true, data: json.data || null };
     } catch {
-      return null;
+      return { ok: false, data: null };
     }
   }, [authHeaders, token]);
 
   const supaSet = useCallback(async (payload) => {
-    if (DEMO_MODE) return false;
+    if (DEMO_MODE || !onlineNow()) return false;
     try {
       const res = await fetch('/api/db', {
         method: 'POST',
@@ -86,123 +187,117 @@ export const AppProvider = ({ children }) => {
         body: JSON.stringify({ data: payload })
       });
       const json = await res.json();
-      return json.ok === true;
+      return res.ok && json.ok === true;
     } catch {
       return false;
     }
   }, [authHeaders, token]);
 
-  // Sync functions
+  // Every change is written locally first and flagged "pending" until the
+  // cloud confirms it, so nothing is lost while offline. Overlapping saves
+  // are coalesced so concurrent edits cannot overwrite each other.
   const sdb = useCallback(async () => {
     const data = dbRef.current;
-    localStorage.setItem(SK, JSON.stringify(data));
-    setSyncStatus('syncing');
-    const ok = await supaSet(data);
-    setSyncStatus(ok ? 'online' : 'offline');
+    localStorage.setItem(skRef.current, JSON.stringify(data));
+    localStorage.setItem(pendingKey(), '1');
     setNotifications(buildNotifications(data));
+    if (savingRef.current) { resaveRef.current = true; return; }
+    savingRef.current = true;
+    setSyncStatus('syncing');
+    let ok = false;
+    do {
+      resaveRef.current = false;
+      ok = await supaSet(dbRef.current);
+    } while (resaveRef.current && ok);
+    savingRef.current = false;
+    if (ok) localStorage.removeItem(pendingKey());
+    setSyncStatus(ok ? 'online' : 'offline');
   }, [supaSet]);
 
   const ldb = useCallback(async () => {
     setSyncStatus('syncing');
-    const cloud = await supaGet();
-    if (cloud) {
-      setDb(cloud);
-      localStorage.setItem(SK, JSON.stringify(cloud));
-      setSyncStatus('online');
-      setNotifications(buildNotifications(cloud));
-    } else {
-      const local = localStorage.getItem(SK);
-      if (local) {
-        try {
-          const parsedData = JSON.parse(local);
-          setDb(parsedData);
-          setNotifications(buildNotifications(parsedData));
-        } catch (e) {
-          console.error('Error parsing local data:', e);
-        }
-      } else {
-        const today = new Date().toISOString().slice(0, 10);
-        const sampleData = {
-          cows: [
-            { id: 'cow1', tag: 'C-001', species: 'Friesian', breed: 'Friesian', colour: 'Black & white', sex: 'Female', dob: '2022-01-15', status: 'alive', weight: 450, avgMilkPerDay: 15, lactation: 'Milking' },
-            { id: 'cow2', tag: 'C-002', species: 'Jersey', breed: 'Jersey', colour: 'Brown', sex: 'Female', dob: '2022-03-20', status: 'alive', weight: 380, avgMilkPerDay: 12, lactation: 'Milking' },
-            { id: 'cow3', tag: 'C-003', species: 'Ayrshire', breed: 'Ayrshire', colour: 'Red & white', sex: 'Female', dob: '2021-11-10', status: 'alive', weight: 420, avgMilkPerDay: 14, lactation: 'Milking' },
-            { id: 'cow4', tag: 'C-004', species: 'Friesian', breed: 'Friesian', colour: 'Black & white', sex: 'Female', dob: '2023-02-05', status: 'alive', weight: 350, avgMilkPerDay: 10, lactation: 'Milking' },
-            { id: 'cow5', tag: 'C-005', species: 'Jersey', breed: 'Jersey', colour: 'Brown', sex: 'Female', dob: '2022-08-15', status: 'alive', weight: 365, avgMilkPerDay: 11, lactation: 'Milking' }
-          ],
-          cowEvents: [],
-          sheep: [
-            { id: 'sheep1', tag: 'S-001', species: 'Dorper', breed: 'Dorper', colour: 'White', sex: 'Female', dob: '2023-03-20', status: 'alive', weight: 65 },
-            { id: 'sheep2', tag: 'S-002', species: 'Merino', breed: 'Merino', colour: 'White', sex: 'Female', dob: '2023-05-10', status: 'alive', weight: 55 },
-            { id: 'sheep3', tag: 'S-003', species: 'Dorper', breed: 'Dorper', colour: 'White', sex: 'Male', dob: '2023-04-15', status: 'alive', weight: 70 },
-            { id: 'sheep4', tag: 'S-004', species: 'Hampshire', breed: 'Hampshire', colour: 'Black', sex: 'Female', dob: '2023-06-01', status: 'alive', weight: 60 }
-          ],
-          sheepEvents: [],
-          milkRecords: [
-            { id: 'mr1', cowId: 'cow1', cowTag: 'C-001', date: '2024-09-20', am: 8, pm: 7, litres: 15 },
-            { id: 'mr2', cowId: 'cow2', cowTag: 'C-002', date: '2024-09-20', am: 6, pm: 6, litres: 12 },
-            { id: 'mr3', cowId: 'cow3', cowTag: 'C-003', date: '2024-09-20', am: 7, pm: 7, litres: 14 },
-            { id: 'mr4', cowId: 'cow4', cowTag: 'C-004', date: '2024-09-20', am: 5, pm: 5, litres: 10 },
-            { id: 'mr5', cowId: 'cow5', cowTag: 'C-005', date: '2024-09-20', am: 6, pm: 5, litres: 11 },
-            { id: 'mr6', cowId: 'cow1', cowTag: 'C-001', date: '2024-09-21', am: 8, pm: 7, litres: 15 },
-            { id: 'mr7', cowId: 'cow2', cowTag: 'C-002', date: '2024-09-21', am: 6, pm: 6, litres: 12 },
-            { id: 'mr8', cowId: 'cow3', cowTag: 'C-003', date: '2024-09-21', am: 7, pm: 7, litres: 14 },
-            { id: 'mr9', cowId: 'cow4', cowTag: 'C-004', date: '2024-09-21', am: 5, pm: 5, litres: 10 },
-            { id: 'mr10', cowId: 'cow5', cowTag: 'C-005', date: '2024-09-21', am: 6, pm: 5, litres: 11 },
-            { id: 'mr11', cowId: 'cow1', cowTag: 'C-001', date: '2024-09-22', am: 8, pm: 7, litres: 15 },
-            { id: 'mr12', cowId: 'cow2', cowTag: 'C-002', date: '2024-09-22', am: 6, pm: 6, litres: 12 },
-            { id: 'mr13', cowId: 'cow3', cowTag: 'C-003', date: '2024-09-22', am: 7, pm: 7, litres: 14 },
-            { id: 'mr14', cowId: 'cow4', cowTag: 'C-004', date: '2024-09-22', am: 5, pm: 5, litres: 10 },
-            { id: 'mr15', cowId: 'cow5', cowTag: 'C-005', date: '2024-09-22', am: 6, pm: 5, litres: 11 },
-            { id: 'mr16', cowId: 'cow1', cowTag: 'C-001', date: '2024-09-23', am: 8, pm: 7, litres: 15 },
-            { id: 'mr17', cowId: 'cow2', cowTag: 'C-002', date: '2024-09-23', am: 6, pm: 6, litres: 12 },
-            { id: 'mr18', cowId: 'cow3', cowTag: 'C-003', date: '2024-09-23', am: 7, pm: 7, litres: 14 },
-            { id: 'mr19', cowId: 'cow4', cowTag: 'C-004', date: '2024-09-23', am: 5, pm: 5, litres: 10 },
-            { id: 'mr20', cowId: 'cow5', cowTag: 'C-005', date: '2024-09-23', am: 6, pm: 5, litres: 11 }
-          ],
-          calves: [
-            { id: 'calf1', tag: 'CF-001', species: 'Friesian', breed: 'Friesian', colour: 'Black & white', sex: 'Female', dob: '2024-06-15', status: 'alive', weight: 45, damId: 'cow1', damTag: 'C-001' },
-            { id: 'calf2', tag: 'CF-002', species: 'Jersey', breed: 'Jersey', colour: 'Brown', sex: 'Male', dob: '2024-07-20', status: 'alive', weight: 38, damId: 'cow2', damTag: 'C-002' }
-          ],
-          plots: [],
-          plotSeasons: [
-            { id: 'plot1', plotId: 'P-001', plotName: 'Plot A', variety: 'Shangi', plantedDate: '2024-03-15', status: 'active' },
-            { id: 'plot2', plotId: 'P-002', plotName: 'Plot B', variety: 'Asante', plantedDate: '2024-04-10', status: 'active' }
-          ],
-          cropActivities: [],
-          sprayLog: [],
-          boosterLog: [],
-          staff: [
-            { id: 'staff1', name: 'John Kamau', role: 'Herdsman', phone: '0712345678', monthlySalary: 25000, status: 'active', startDate: '2023-01-15' },
-            { id: 'staff2', name: 'Mary Wanjiku', role: 'Farm Manager', phone: '0723456789', monthlySalary: 45000, status: 'active', startDate: '2022-06-01' },
-            { id: 'staff3', name: 'Peter Ochieng', role: 'Field Worker', phone: '0734567890', monthlySalary: 20000, status: 'active', startDate: '2023-08-20' }
-          ],
-          staffPayments: [],
-          vetVisits: [],
-          transactions: [
-            { id: 'tx1', type: 'expense', date: '2024-09-01', amount: 25000, category: 'Feed', desc: 'Cattle feed purchase - September' },
-            { id: 'tx2', type: 'income', date: '2024-09-05', amount: 45000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
-            { id: 'tx3', type: 'expense', date: '2024-09-10', amount: 15000, category: 'Veterinary', desc: 'Vet visit - routine checkup' },
-            { id: 'tx4', type: 'income', date: '2024-09-15', amount: 48000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
-            { id: 'tx5', type: 'expense', date: '2024-09-18', amount: 8000, category: 'Equipment', desc: 'Fencing materials' },
-            { id: 'tx6', type: 'income', date: '2024-09-20', amount: 46000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
-            { id: 'tx7', type: 'expense', date: '2024-08-25', amount: 90000, category: 'Staff Salary', desc: 'August staff salaries' },
-            { id: 'tx8', type: 'income', date: '2024-08-28', amount: 44000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
-            { id: 'tx9', type: 'expense', date: '2024-08-15', amount: 22000, category: 'Feed', desc: 'Cattle feed purchase - August' },
-            { id: 'tx10', type: 'income', date: '2024-08-20', amount: 43000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
-            { id: 'tx11', type: 'expense', date: '2024-07-25', amount: 90000, category: 'Staff Salary', desc: 'July staff salaries' },
-            { id: 'tx12', type: 'income', date: '2024-07-28', amount: 42000, category: 'Milk Sales', desc: 'Milk sales to cooperative' },
-            { id: 'tx13', type: 'expense', date: '2024-07-15', amount: 20000, category: 'Feed', desc: 'Cattle feed purchase - July' },
-            { id: 'tx14', type: 'income', date: '2024-07-20', amount: 41000, category: 'Milk Sales', desc: 'Milk sales to cooperative' }
-          ]
-        };
-        setDb(sampleData);
-        localStorage.setItem(SK, JSON.stringify(sampleData));
-        setNotifications(buildNotifications(sampleData));
-      }
-      setSyncStatus('offline');
+    const local = localStorage.getItem(skRef.current);
+    const hasPending = localStorage.getItem(pendingKey()) === '1';
+    let parsedLocal = null;
+    try { parsedLocal = local ? JSON.parse(local) : null; } catch (e) { console.error('Error parsing local data:', e); }
+
+    // Unsynced offline edits win over the cloud copy; push them up first.
+    if (hasPending && parsedLocal) {
+      setDb(parsedLocal);
+      setNotifications(buildNotifications(parsedLocal));
+      setDbLoaded(true);
+      const ok = await supaSet(parsedLocal);
+      if (ok) localStorage.removeItem(pendingKey());
+      setSyncStatus(ok ? 'online' : 'offline');
+      return;
     }
-  }, [supaGet]);
+
+    const cloud = await supaGet();
+    // Never let a farm start from a blank slate when the cloud copy simply couldn't be reached.
+    setLoadFailed(!cloud.ok && !parsedLocal && !DEMO_MODE);
+    if (cloud.ok && cloud.data) {
+      setDb(cloud.data);
+      localStorage.setItem(skRef.current, JSON.stringify(cloud.data));
+      setNotifications(buildNotifications(cloud.data));
+      setSyncStatus('online');
+    } else if (parsedLocal) {
+      setDb(parsedLocal);
+      setNotifications(buildNotifications(parsedLocal));
+      setSyncStatus(cloud.ok ? 'online' : 'offline');
+    } else {
+      if (DEMO_MODE) {
+        const sampleData = buildSampleData();
+        setDb(sampleData);
+        setNotifications(buildNotifications(sampleData));
+      } else {
+        const blank = emptyDb();
+        setDb(blank);
+        setNotifications([]);
+      }
+      setSyncStatus(cloud.ok ? 'online' : 'offline');
+    }
+    setDbLoaded(true);
+  }, [supaGet, supaSet]);
+
+  // Sound the alarm only when a new alert appears (not for ones already seen).
+  const seenAlertsRef = useRef(null);
+  useEffect(() => {
+    if (!dbLoaded) { seenAlertsRef.current = null; return; }
+    const keys = new Set(notifications.map((n) => n.title));
+    if (seenAlertsRef.current && notifications.some((n) => n.type !== 'info' && !seenAlertsRef.current.has(n.title))) {
+      playAlarm();
+    }
+    seenAlertsRef.current = keys;
+  }, [notifications, dbLoaded]);
+  useEffect(() => {
+    window.addEventListener('pointerdown', unlockAudio, { once: true });
+    return () => window.removeEventListener('pointerdown', unlockAudio);
+  }, []);
+
+  // Reconnect handling: push anything saved offline as soon as we're back online.
+  const flushRef = useRef(null);
+  flushRef.current = async () => {
+    if (!currentUser || DEMO_MODE) return;
+    if (!onlineNow()) { setSyncStatus('offline'); return; }
+    if (localStorage.getItem(pendingKey()) === '1' && !savingRef.current) {
+      await sdb();
+    } else if (syncStatus === 'offline' && !savingRef.current) {
+      const cloud = await supaGet();
+      if (cloud.ok) setSyncStatus('online');
+    }
+  };
+  useEffect(() => {
+    const run = () => flushRef.current && flushRef.current();
+    const goOffline = () => setSyncStatus('offline');
+    window.addEventListener('online', run);
+    window.addEventListener('offline', goOffline);
+    const timer = setInterval(run, 20000);
+    return () => {
+      window.removeEventListener('online', run);
+      window.removeEventListener('offline', goOffline);
+      clearInterval(timer);
+    };
+  }, []);
 
   // Auth functions
   const sha256 = async (str) => {
@@ -245,10 +340,13 @@ export const AppProvider = ({ children }) => {
         role: result.role 
       };
       
+      skRef.current = 'avexi_v3_' + user.id;
+      setDbLoaded(false);
       setCurrentUser(user);
       setToken(result.token);
-      sessionStorage.setItem('avexi_user', JSON.stringify(user));
-      sessionStorage.setItem('avexi_token', result.token);
+      localStorage.setItem('avexi_user', JSON.stringify(user));
+      localStorage.setItem('avexi_token', result.token);
+      localStorage.setItem('avexi_login_at', String(Date.now()));
 
       // Log login
       fetch('/api/logs', {
@@ -274,72 +372,80 @@ export const AppProvider = ({ children }) => {
   const doDemoLogin = async () => {
     if (!DEMO_MODE) return { success: false, error: 'Demo mode is off.' };
     const user = { id: 'demo', username: 'demo', name: 'Demo Visitor', role: 'owner' };
+    skRef.current = 'avexi_v3_demo';
     setCurrentUser(user);
-    sessionStorage.setItem('avexi_user', JSON.stringify(user));
+    localStorage.setItem('avexi_user', JSON.stringify(user));
     await ldb();
     return { success: true };
   };
 
   const doLogout = useCallback(() => {
-    sessionStorage.removeItem('avexi_user');
-    sessionStorage.removeItem('avexi_token');
+    localStorage.removeItem('avexi_user');
+    localStorage.removeItem('avexi_token');
+    localStorage.removeItem('avexi_login_at');
+    setDbLoaded(false);
+    setDb(emptyDb());
+    setNotifications([]);
     setCurrentUser(null);
     setToken(null);
-  }, []);
+  }, [setDb, setToken]);
 
   const checkSession = useCallback(async () => {
-    const stored = sessionStorage.getItem('avexi_user');
+    const stored = localStorage.getItem('avexi_user');
     if (!stored) return;
 
     let parsed;
     try {
       parsed = JSON.parse(stored);
+      skRef.current = 'avexi_v3_' + parsed.id;
       if (DEMO_MODE && parsed.id === 'demo') {
         setCurrentUser(parsed);
         await ldb();
         return;
       }
     } catch (e) {
-      sessionStorage.removeItem('avexi_user');
+      localStorage.removeItem('avexi_user');
       return;
     }
 
-    const storedToken = sessionStorage.getItem('avexi_token');
+    const storedToken = localStorage.getItem('avexi_token');
+    const loginAt = Number(localStorage.getItem('avexi_login_at')) || 0;
+    const tokenFresh = Date.now() - loginAt < 23 * 60 * 60 * 1000;
+    const clearSession = () => {
+      localStorage.removeItem('avexi_user');
+      localStorage.removeItem('avexi_token');
+      localStorage.removeItem('avexi_login_at');
+      setCurrentUser(null);
+      setToken(null);
+    };
+    if (!storedToken) { clearSession(); return; }
 
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-avexi-token': storedToken || '' },
+        headers: { 'Content-Type': 'application/json', 'x-avexi-token': storedToken },
         body: JSON.stringify({ action: 'verify', userId: parsed.id })
       });
+      if (res.status === 401 || res.status === 403) throw new Error('rejected');
       const result = await res.json();
-
-      if (!res.ok || !result || result.status !== 'ok') {
-        throw new Error('Session verification failed');
-      }
-      const u = result;
-      setCurrentUser({
-        id: u.id,
-        username: u.username,
-        name: u.full_name,
-        role: u.role
-      });
-      setToken(u.token);
-      sessionStorage.setItem('avexi_user', JSON.stringify({
-        id: u.id,
-        username: u.username,
-        name: u.full_name,
-        role: u.role
-      }));
-      sessionStorage.setItem('avexi_token', u.token);
+      if (!res.ok || !result || result.status !== 'ok') throw new Error('rejected');
+      const u = { id: result.id, username: result.username, name: result.full_name, role: result.role };
+      setCurrentUser(u);
+      setToken(result.token);
+      localStorage.setItem('avexi_user', JSON.stringify(u));
+      localStorage.setItem('avexi_token', result.token);
+      localStorage.setItem('avexi_login_at', String(Date.now()));
     } catch (e) {
-      sessionStorage.removeItem('avexi_user');
-      sessionStorage.removeItem('avexi_token');
-      setCurrentUser(null);
-      setToken(null);
-      return;
+      // Offline or server unreachable: keep a still-fresh session so the app opens with local data.
+      if (e.message !== 'rejected' && tokenFresh) {
+        setCurrentUser(parsed);
+        setToken(storedToken);
+        setSyncStatus('offline');
+      } else {
+        clearSession();
+        return;
+      }
     }
-
     await ldb();
   }, [ldb]);
 
@@ -410,6 +516,9 @@ export const AppProvider = ({ children }) => {
     notifications,
     setNotifications,
     currentSection,
+    dbLoaded,
+    loadFailed,
+    retryLoad: ldb,
     
     // Actions
     toggleTheme,

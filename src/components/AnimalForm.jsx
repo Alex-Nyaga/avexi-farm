@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
+import SelectOrOther from './SelectOrOther';
 import { useApp } from '../context/AppContext';
 import { uid, today } from '../utils/helpers';
 
@@ -13,8 +14,12 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
   const animal = animalId ? list.find(x => x.id === animalId) : null;
 
   const species = isCow 
-    ? ['Friesian', 'Jersey', 'Ayrshire', 'Guernsey', 'Brown Swiss', 'Zebu/Boran', 'Crossbreed', 'Other']
-    : ['Dorper', 'Merino', 'Hampshire', 'Suffolk', 'Corriedale', 'Red Maasai', 'Blackhead Persian', 'Crossbreed', 'Other'];
+    ? ['Friesian', 'Jersey', 'Ayrshire', 'Guernsey', 'Brown Swiss', 'Zebu/Boran', 'Crossbreed']
+    : ['Dorper', 'Merino', 'Hampshire', 'Suffolk', 'Corriedale', 'Red Maasai', 'Blackhead Persian', 'Crossbreed'];
+
+  const colours = ['Black & white', 'Black', 'White', 'Brown', 'Red', 'Red & white', 'Fawn', 'Grey', 'Spotted'];
+  const drugs = ['Ivermectin', 'Albendazole', 'Levamisole', 'Fenbendazole', 'Oxfendazole', 'Closantel'];
+  const vaccines = ['FMD', 'Lumpy skin disease', 'Anthrax', 'Black quarter', 'Brucellosis', 'East Coast Fever', 'Rift Valley Fever', 'PPR', 'Sheep pox'];
 
   useEffect(() => {
     if (animal) {
@@ -79,6 +84,13 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
       alert(`A ${type} with the name/tag "${duplicate.tag}" already exists. Please use a unique name or tag.`);
       return;
     }
+
+    // Dates must follow real life: nothing happens to an animal before it was born.
+    const f = formData;
+    if (f.dob && f.purchaseDate && f.purchaseDate < f.dob) { alert('Purchase date cannot be before the date of birth.'); return; }
+    if (f.dob && f.lastDeworming && f.lastDeworming < f.dob) { alert('Last deworming cannot be before the date of birth.'); return; }
+    if (f.dob && f.lastVaccination && f.lastVaccination < f.dob) { alert('Last vaccination cannot be before the date of birth.'); return; }
+    if (f.lastVaccination && f.nextVaccination && f.nextVaccination < f.lastVaccination) { alert('Next vaccination must be after the last vaccination.'); return; }
 
     const targetList = isCow ? (isCalf ? 'calves' : 'cows') : 'sheep';
     const purchasePrice = Number(formData.purchasePrice) || 0;
@@ -165,17 +177,8 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
             <label>Tag / Name *</label>
             <input name="tag" value={formData.tag || ''} onChange={handleChange} placeholder="e.g. C-001" required />
           </div>
-          <div className="fg">
-            <label>Species / Breed</label>
-            <select name="species" value={formData.species || ''} onChange={handleChange}>
-              <option value="">Select...</option>
-              {species.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-          <div className="fg">
-            <label>Colour / Markings</label>
-            <input name="colour" value={formData.colour || ''} onChange={handleChange} placeholder="e.g. Black & white" />
-          </div>
+          <SelectOrOther label="Species / Breed" name="species" value={formData.species} onChange={handleChange} options={species} />
+          <SelectOrOther label="Colour / Markings" name="colour" value={formData.colour} onChange={handleChange} options={colours} />
           <div className="fg">
             <label>Sex</label>
             <select name="sex" value={formData.sex || 'Female'} onChange={handleChange}>
@@ -205,28 +208,22 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
         <div className="form-grid">
           <div className="fg">
             <label>Last Deworming Date</label>
-            <input type="date" name="lastDeworming" value={formData.lastDeworming || ''} onChange={handleChange} />
+            <input type="date" name="lastDeworming" value={formData.lastDeworming || ''} onChange={handleChange} min={formData.dob || undefined} max={today()} />
           </div>
           <div className="fg">
             <label>Deworming Interval (days)</label>
             <input type="number" name="dewormingIntervalDays" value={formData.dewormingIntervalDays || 90} onChange={handleChange} placeholder="90" />
           </div>
-          <div className="fg">
-            <label>Deworming Drug Used</label>
-            <input name="dewormingDrug" value={formData.dewormingDrug || ''} onChange={handleChange} placeholder="e.g. Ivermectin" />
-          </div>
+          <SelectOrOther label="Deworming Drug Used" name="dewormingDrug" value={formData.dewormingDrug} onChange={handleChange} options={drugs} />
           <div className="fg">
             <label>Last Vaccination Date</label>
-            <input type="date" name="lastVaccination" value={formData.lastVaccination || ''} onChange={handleChange} />
+            <input type="date" name="lastVaccination" value={formData.lastVaccination || ''} onChange={handleChange} min={formData.dob || undefined} max={today()} />
           </div>
           <div className="fg">
             <label>Next Vaccination Date</label>
-            <input type="date" name="nextVaccination" value={formData.nextVaccination || ''} onChange={handleChange} />
+            <input type="date" name="nextVaccination" value={formData.nextVaccination || ''} onChange={handleChange} min={formData.lastVaccination || undefined} />
           </div>
-          <div className="fg">
-            <label>Vaccination Type</label>
-            <input name="vaccinationType" value={formData.vaccinationType || ''} onChange={handleChange} placeholder="e.g. FMD, Lumpy skin" />
-          </div>
+          <SelectOrOther label="Vaccination Type" name="vaccinationType" value={formData.vaccinationType} onChange={handleChange} options={vaccines} />
         </div>
 
         {isCow && !isCalf && (

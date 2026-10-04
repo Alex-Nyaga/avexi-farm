@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { issueToken, setCors } from './_auth.js';
+import { issueToken, verifyToken, setCors } from './_auth.js';
 
 const SUPA_URL = process.env.SUPA_URL;
 const SUPA_KEY = process.env.SUPA_SERVICE_KEY;
@@ -15,7 +15,12 @@ export default async function handler(req, res) {
   if (action === 'login' && (typeof username !== 'string' || typeof password !== 'string' || password.length < 8)) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
-  if (action === 'verify' && typeof userId !== 'string') return res.status(400).json({ error: 'User id is required' });
+  if (action === 'verify') {
+    // Refreshing a session needs the existing signed token for the same user — never just an id.
+    const presented = req.headers['x-avexi-token'];
+    const payload = typeof presented === 'string' ? verifyToken(presented) : null;
+    if (typeof userId !== 'string' || !payload || payload.id !== userId) return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   try {
     const filter = action === 'login' ? `username=ilike.${encodeURIComponent(username.trim())}` : `id=eq.${encodeURIComponent(userId)}`;
