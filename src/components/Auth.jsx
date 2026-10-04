@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 
 const Auth = () => {
-  const { doLogin } = useApp();
+  const { doLogin, doDemoLogin } = useApp();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -108,6 +108,11 @@ const Auth = () => {
               {loading ? 'Signing in…' : 'Sign In →'}
             </button>
           </form>
+          {import.meta.env.VITE_DEMO_MODE === 'true' && (
+            <button type="button" className="btn-auth" style={{ marginTop: '.75rem', background: 'transparent', color: 'var(--green)', border: '1px solid var(--green)' }} onClick={doDemoLogin}>
+              View demo (sample data)
+            </button>
+          )}
           <div className="auth-farm-info">
             <p>Farm Owner: <strong>Avelyne Wambui</strong></p>
             <p>Administrator: <strong>Alex Nyaga</strong></p>

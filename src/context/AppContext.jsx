@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { buildNotifications } from '../utils/notifications';
 
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
+
 const AppContext = createContext();
 
 export const useApp = () => {
@@ -65,6 +67,7 @@ export const AppProvider = ({ children }) => {
 
   // Database helpers
   const supaGet = useCallback(async () => {
+    if (DEMO_MODE) return null;
     try {
       const res = await fetch('/api/db', { headers: authHeaders() });
       const json = await res.json();
@@ -75,6 +78,7 @@ export const AppProvider = ({ children }) => {
   }, [authHeaders, token]);
 
   const supaSet = useCallback(async (payload) => {
+    if (DEMO_MODE) return false;
     try {
       const res = await fetch('/api/db', {
         method: 'POST',
@@ -267,6 +271,15 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const doDemoLogin = async () => {
+    if (!DEMO_MODE) return { success: false, error: 'Demo mode is off.' };
+    const user = { id: 'demo', username: 'demo', name: 'Demo Visitor', role: 'owner' };
+    setCurrentUser(user);
+    sessionStorage.setItem('avexi_user', JSON.stringify(user));
+    await ldb();
+    return { success: true };
+  };
+
   const doLogout = useCallback(() => {
     sessionStorage.removeItem('avexi_user');
     sessionStorage.removeItem('avexi_token');
@@ -281,6 +294,11 @@ export const AppProvider = ({ children }) => {
     let parsed;
     try {
       parsed = JSON.parse(stored);
+      if (DEMO_MODE && parsed.id === 'demo') {
+        setCurrentUser(parsed);
+        await ldb();
+        return;
+      }
     } catch (e) {
       sessionStorage.removeItem('avexi_user');
       return;
@@ -396,6 +414,7 @@ export const AppProvider = ({ children }) => {
     // Actions
     toggleTheme,
     doLogin,
+    doDemoLogin,
     doLogout,
     checkSession,
     sdb,
