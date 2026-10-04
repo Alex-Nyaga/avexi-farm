@@ -24,7 +24,7 @@ const Reports = () => {
   const livestock = () => {
     const r = make('Livestock Report', `${db.cows.length + db.sheep.length} animals`);
     r.kpis([['Cows', db.cows.length], ['Sheep', db.sheep.length], ['Calves', (db.calves || []).length], ['Vet visits', (db.vetVisits || []).length]]);
-    const rows = (a) => a.map((x) => [x.tag, x.breed || x.species || '—', x.sex || '—', x.status || '—', x.weight ? `${x.weight} kg` : '—']);
+    const rows = (a) => a.map((x) => [x.tag, x.breed || x.species || 'â€”', x.sex || 'â€”', x.status || 'â€”', x.weight ? `${x.weight} kg` : 'â€”']);
     r.table(['Tag', 'Breed', 'Sex', 'Status', 'Weight'], rows(db.cows), 'Cows');
     r.table(['Tag', 'Breed', 'Sex', 'Status', 'Weight'], rows(db.sheep), 'Sheep');
     r.signatures();
@@ -42,7 +42,7 @@ const Reports = () => {
     if (m.keys.length) {
       r.chart({ type: 'bar', labels: m.keys, datasets: [{ label: 'Litres', data: m.vals, backgroundColor: '#2a7a3a', borderRadius: 4 }], xTitle: 'Month', yTitle: 'Litres' }, 'Monthly production');
     }
-    r.table(['Date', 'Cow', 'AM (L)', 'PM (L)', 'Total (L)'], recs.map((x) => [fd(x.date), x.cowTag || '—', x.am || 0, x.pm || 0, total(x).toFixed(1)]), 'Records');
+    r.table(['Date', 'Cow', 'AM (L)', 'PM (L)', 'Total (L)'], recs.map((x) => [fd(x.date), x.cowTag || 'â€”', x.am || 0, x.pm || 0, total(x).toFixed(1)]), 'Records');
     r.signatures();
     r.save('milk-report.pdf');
   };
@@ -70,7 +70,7 @@ const Reports = () => {
       const palette = ['#2a7a3a', '#1a5a8a', '#956b10', '#b03020', '#6b4aa0', '#2a8a8a', '#8a5a2a', '#5a6b2a'];
       r.chart({ type: 'doughnut', labels: ck, datasets: [{ data: ck.map((k) => cats[k]), backgroundColor: ck.map((_, n) => palette[n % palette.length]) }], width: 900, height: 420 }, 'Expenses by category');
     }
-    r.table(['Date', 'Type', 'Category', 'Description', 'Amount'], tx.map((t) => [fd(t.date), t.type, t.category || '—', t.desc || '—', ksh(t.amount)]), 'Transactions');
+    r.table(['Date', 'Type', 'Category', 'Description', 'Amount'], tx.map((t) => [fd(t.date), t.type, t.category || 'â€”', t.desc || 'â€”', ksh(t.amount)]), 'Transactions');
     r.signatures();
     r.save('financial-report.pdf');
   };
@@ -80,8 +80,8 @@ const Reports = () => {
     const r = make('Staff Report', `${list.length} members`);
     r.kpis([['Total', list.length], ['Active', list.filter((s) => s.status !== 'inactive').length], ['Left', list.filter((s) => s.status === 'inactive').length]]);
     r.table(['Name', 'Role', 'Phone', staff ? 'Status' : 'Salary', staff ? 'Started' : 'Status'], list.map((s) => staff
-      ? [s.name, s.role || '—', s.phone || '—', s.status || '—', s.startDate ? fd(s.startDate) : '—']
-      : [s.name, s.role || '—', s.phone || '—', s.monthlySalary ? ksh(s.monthlySalary) : '—', s.status === 'inactive' && s.leftDate ? `left ${fd(s.leftDate)}` : (s.status || '—')]), 'Team');
+      ? [s.name, s.role || 'â€”', s.phone || 'â€”', s.status || 'â€”', s.startDate ? fd(s.startDate) : 'â€”']
+      : [s.name, s.role || 'â€”', s.phone || 'â€”', s.monthlySalary ? ksh(s.monthlySalary) : 'â€”', s.status === 'inactive' && s.leftDate ? `left ${fd(s.leftDate)}` : (s.status || 'â€”')]), 'Team');
     r.signatures();
     r.save('staff-report.pdf');
   };
@@ -90,7 +90,7 @@ const Reports = () => {
     const seasons = db.plotSeasons || [];
     const r = make('Crop Report', `${seasons.length} seasons`);
     r.kpis([['Seasons', seasons.length], ['Plots', (db.plots || []).length]]);
-    r.table(['Plot', 'Variety', 'Planted', 'Status'], seasons.map((s) => [s.plotName || s.plotId, s.variety || '—', s.plantedDate ? fd(s.plantedDate) : '—', s.status || '—']), 'Seasons');
+    r.table(['Plot', 'Variety', 'Planted', 'Status'], seasons.map((s) => [s.plotName || s.plotId, s.variety || 'â€”', s.plantedDate ? fd(s.plantedDate) : 'â€”', s.status || 'â€”']), 'Seasons');
     r.signatures();
     r.save('crop-report.pdf');
   };

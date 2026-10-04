@@ -40,14 +40,14 @@ const AppContent = () => {
   }
 
   if (!dbLoaded) {
-    return <div className="boot">Loading your farm…</div>;
+    return <div className="boot">Loading your farm...</div>;
   }
 
   if (loadFailed) {
     return (
       <div className="boot">
         <div className="boot-card">
-          <h2>Can’t reach your farm data</h2>
+          <h2>Can't reach your farm data</h2>
           <p className="text-muted">You appear to be offline and nothing is saved on this device yet. Reconnect and try again.</p>
           <div className="modal-actions">
             <button className="btn btn-primary" onClick={retryLoad}>Try again</button>
