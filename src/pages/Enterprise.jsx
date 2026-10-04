@@ -71,6 +71,9 @@ const Enterprise = ({ enterpriseId }) => {
     const others = records.filter((r) => r.id !== editId);
     const starts = others.filter((r) => START[kind].includes(r.activity)).map((r) => r.date).sort();
     const isPrePlanting = kind === 'crop' && PRE_PLANTING.includes(form.activity);
+    if (kind === 'crop' && !START.crop.includes(form.activity) && !isPrePlanting && !starts.length) {
+      return `Record planting before ${form.activity.toLowerCase()}.`;
+    }
     if (!START[kind].includes(form.activity) && !isPrePlanting && starts.length && form.date < starts[0]) {
       return `This cannot be dated before ${kind === 'crop' ? 'planting' : 'stocking'} (${fd(starts[0])}).`;
     }
@@ -81,7 +84,7 @@ const Enterprise = ({ enterpriseId }) => {
       return 'Record planting first — harvest needs an earlier planting date.';
     }
     if (kind === 'crop' && form.activity === 'Sale') {
-      if (!form.money || Number(form.money) <= 0) return 'Enter total sale proceeds greater than zero.';
+      if (form.money && Number(form.money) <= 0) return 'Sale proceeds must be greater than zero when provided.';
       const harvests = others.filter((r) => r.activity === 'Harvest').map((r) => r.date).sort();
       if (!harvests.length) return 'Record a harvest before recording a crop sale.';
       if (form.date < harvests[0]) return `A crop sale cannot be dated before harvest (${fd(harvests[0])}).`;
@@ -225,7 +228,7 @@ const Enterprise = ({ enterpriseId }) => {
               <>
                 <div className="fg">
                   <label>{isIncome(form.activity) ? 'Sale proceeds (KES)' : 'Activity cost (KES)'}</label>
-                  <input type="number" min={isIncome(form.activity) ? '0.01' : '0'} step="any" name="money" value={form.money} onChange={set} placeholder={isIncome(form.activity) ? 'Total sale proceeds' : 'Optional'} required={isIncome(form.activity)} />
+                  <input type="number" min="0" step="any" name="money" value={form.money} onChange={set} placeholder={isIncome(form.activity) ? 'Optional — enter total proceeds if known' : 'Optional'} />
                 </div>
               </>
             )}

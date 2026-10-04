@@ -48,7 +48,10 @@ const Header = ({ onMenuClick }) => {
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z"/></svg>
           )}
         </button>
-        <button className="text-btn" onClick={doLogout} type="button">Sign out</button>
+        <button className="text-btn header-signout" onClick={doLogout} type="button" aria-label="Sign out" title="Sign out">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg>
+          <span>Sign out</span>
+        </button>
       </header>
 
       <div className={`notif-panel ${showNotifPanel ? 'open' : ''}`}>

@@ -35,7 +35,7 @@ const Reports = () => {
     const recs = db.milkRecords || [];
     const total = (x) => Number(x.am || 0) + Number(x.pm || 0);
     const litres = sum(recs, total);
-    const sold = sum(recs, (x) => x.sold || x.litresSold || 0);
+    const sold = sum(recs, (x) => x.soldLitres || x.litresSold || x.sold || 0);
     const r = make('Milk Production Report', `${recs.length} records`);
     r.kpis([['Total litres', litres.toFixed(1)], ['Sold (L)', sold.toFixed(1)], ['Records', recs.length]]);
     const m = byMonth(recs, total);
@@ -95,7 +95,106 @@ const Reports = () => {
     r.save('crop-report.pdf');
   };
 
+  const fullFarm = () => {
+    const r = make('Full Farm Report', 'Complete farm register and activity history');
+    const cows = db.cows || [];
+    const calves = db.calves || [];
+    const sheep = db.sheep || [];
+    const milkRecords = db.milkRecords || [];
+    const enterprises = db.enterprises || [];
+    const enterpriseRecords = db.enterpriseRecords || [];
+    const seasons = db.plotSeasons || [];
+    const cropActivities = db.cropActivities || [];
+    const cowEvents = db.cowEvents || [];
+    const sheepEvents = db.sheepEvents || [];
+    const transactions = staff ? [] : (db.transactions || []);
+    const staffList = db.staff || [];
+
+    r.kpis([
+      ['Cattle & calves', cows.length + calves.length],
+      ['Sheep', sheep.length],
+      ['Milk records', milkRecords.length],
+      ['Crop seasons', seasons.length],
+      ['Farm activities', enterpriseRecords.length + cropActivities.length]
+    ]);
+
+    const animalRows = (items) => items.map((a) => [a.tag || '—', a.breed || a.species || '—', a.sex || '—', a.dob ? fd(a.dob) : '—', a.status || '—', a.weight ? `${a.weight} kg` : '—']);
+    r.table(['Tag', 'Breed / type', 'Sex', 'Born', 'Status', 'Weight'], animalRows(cows), 'Cattle');
+    r.table(['Tag', 'Breed / type', 'Sex', 'Born', 'Status', 'Weight'], animalRows(calves), 'Calves');
+    r.table(['Tag', 'Breed / type', 'Sex', 'Born', 'Status', 'Weight'], animalRows(sheep), 'Sheep');
+
+    const allEvents = [...cowEvents.map((e) => ({ ...e, species: 'Cattle' })), ...sheepEvents.map((e) => ({ ...e, species: 'Sheep' }))]
+      .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+    r.table(['Date', 'Group', 'Animal ID', 'Event', 'Product / notes', 'Dose / outcome'], allEvents.map((e) => [
+      e.date ? fd(e.date) : '—', e.species, e.tag || e.animalId || '—', e.event || '—',
+      [e.vaccineType, e.drug, e.cause, e.notes].filter(Boolean).join(' · ') || '—',
+      [e.dosage, e.vaccineRoute, e.outcome, e.withdrawalPeriod].filter(Boolean).join(' · ') || '—'
+    ]), 'Animal health, breeding and lifecycle events');
+
+    r.table(['Date', 'Animal', 'AM (L)', 'PM (L)', 'Total (L)', 'Sold (L)', 'Buyer'], milkRecords.map((m) => [
+      m.date ? fd(m.date) : '—', m.cowTag || m.animalTag || '—', m.am || 0, m.pm || 0,
+      (Number(m.am || 0) + Number(m.pm || 0)).toFixed(1), m.soldLitres || m.litresSold || m.sold || 0, m.buyer || '—'
+    ]), 'Milk production and sales');
+
+    r.table(['Enterprise', 'Category', 'Type', 'Status'], enterprises.map((e) => [e.name, e.category || '—', e.kind || '—', e.status || 'active']), 'Farm enterprises');
+    r.table(['Date', 'Enterprise', 'Activity', 'Quantity', 'Cost / proceeds', 'Details', 'Notes'], enterpriseRecords.map((x) => [
+      x.date ? fd(x.date) : '—', enterprises.find((e) => e.id === x.enterpriseId)?.name || x.enterpriseId || '—', x.activity || '—',
+      x.quantity !== '' && x.quantity != null ? `${x.quantity} ${x.unit || ''}` : '—',
+      x.money ? ksh(x.money) : '—',
+      Object.entries(x.details || {}).filter(([, v]) => v !== '' && v != null).map(([k, v]) => `${k}: ${v}`).join('; ') || '—',
+      x.notes || '—'
+    ]), 'Livestock and crop activity records');
+
+    r.table(['Plot', 'Variety', 'Planted', 'Harvested', 'Status'], seasons.map((s) => [
+      s.plotName || s.plotId || '—', s.variety || '—', s.plantedDate ? fd(s.plantedDate) : '—',
+      s.harvestedDate ? fd(s.harvestedDate) : '—', s.status || '—'
+    ]), 'Crop seasons');
+    r.table(['Plot', 'Created'], (db.plots || []).map((plot) => [plot.name || plot.id || '—', plot.createdAt ? fd(plot.createdAt.slice(0, 10)) : '—']), 'Plots');
+    r.table(['Date', 'Plot', 'Activity', 'Details', 'Notes', 'Cost / proceeds'], cropActivities.map((x) => [
+      x.date ? fd(x.date) : '—', x.plotName || '—', x.activity || '—',
+      Object.entries(x.details || {}).filter(([, v]) => v !== '' && v != null).map(([k, v]) => `${k}: ${v}`).join('; ') || '—',
+      x.notes || '—', x.cost ? ksh(x.cost) : '—'
+    ]), 'Crop field operations');
+    r.table(['Date', 'Plot / season', 'Product', 'Target / dose', 'Notes'], (db.sprayLog || []).map((x) => [
+      x.date ? fd(x.date) : '—', seasons.find((s) => s.id === x.seasonId)?.plotName || x.plotName || '—',
+      x.product || x.chemical || '—', [x.target, x.dosage, x.preHarvestInterval ? `${x.preHarvestInterval} day PHI` : ''].filter(Boolean).join(' · ') || '—',
+      x.notes || '—'
+    ]), 'Legacy crop spray log');
+    r.table(['Date', 'Plot / season', 'Activity', 'Product / notes'], (db.boosterLog || []).map((x) => [
+      x.date ? fd(x.date) : '—', seasons.find((s) => s.id === x.seasonId)?.plotName || x.plotName || '—',
+      x.activity || x.type || '—', [x.product, x.notes].filter(Boolean).join(' · ') || '—'
+    ]), 'Other crop input log');
+
+    r.table(['Date', 'Animal', 'Reason / diagnosis', 'Treatment', 'Cost', 'Follow-up'], (db.vetVisits || []).map((v) => [
+      v.date ? fd(v.date) : '—', v.animalTag || v.tag || v.animalId || '—', v.reason || v.diagnosis || '—',
+      v.treatment || '—', v.cost ? ksh(v.cost) : '—', v.followUpDate ? fd(v.followUpDate) : '—'
+    ]), 'Veterinary visits');
+
+    if (!staff) {
+      const income = sum(transactions.filter((t) => t.type === 'income'), (t) => t.amount);
+      const expenses = sum(transactions.filter((t) => t.type === 'expense'), (t) => t.amount);
+      r.kpis([['Total income', ksh(income)], ['Total expenses', ksh(expenses)], ['Net balance', ksh(income - expenses)]]);
+      r.table(['Date', 'Type', 'Category', 'Description', 'Source', 'Amount'], transactions.map((t) => [
+        t.date ? fd(t.date) : '—', t.type || '—', t.category || '—', t.desc || '—', t.source || '—', ksh(t.amount)
+      ]), 'All financial transactions');
+    }
+
+    r.table(['Staff member', 'Role', 'Phone', 'Status', 'Start date', 'Left date', ...(!staff ? ['Monthly salary'] : [])], staffList.map((s) => [
+      s.name || '—', s.role || '—', s.phone || '—', s.status || '—', s.startDate ? fd(s.startDate) : '—',
+      s.leftDate ? fd(s.leftDate) : '—', ...(!staff ? [s.monthlySalary ? ksh(s.monthlySalary) : '—'] : [])
+    ]), 'Staff register');
+    if (!staff) {
+      r.table(['Date', 'Staff', 'Type', 'Amount', 'Notes'], (db.staffPayments || []).map((p) => [
+        p.date ? fd(p.date) : '—', p.staffName || p.name || p.staffId || '—', p.type || 'Payment',
+        p.amount ? ksh(p.amount) : '—', p.notes || p.desc || '—'
+      ]), 'Staff payments');
+    }
+    r.signatures();
+    r.save('full-farm-report.pdf');
+  };
+
   const items = [
+    ['Full Farm Report', 'All livestock, crops, milk, health, staff and finances', fullFarm],
     ['Livestock Report', 'Cows and sheep overview', livestock],
     ['Milk Production Report', 'Monthly graph, records and sales', milk],
     ['Crop Report', 'Plots and seasons', crop],
@@ -115,7 +214,7 @@ const Reports = () => {
         </div>
         <div style={{ display: 'grid', gap: '.75rem' }}>
           {items.map(([t, s, fn]) => (
-            <button key={t} type="button" className="btn btn-outline" style={{ justifyContent: 'space-between', textAlign: 'left' }} onClick={fn}>
+            <button key={t} type="button" className="btn btn-outline report-download" onClick={fn}>
               <span><strong>{t}</strong><br /><small>{s}</small></span>
               <span>Download PDF</span>
             </button>

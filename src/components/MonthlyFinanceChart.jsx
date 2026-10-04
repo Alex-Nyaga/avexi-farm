@@ -72,42 +72,30 @@ const MonthlyFinanceChart = () => {
 
     const ctx = chartRef.current.getContext('2d');
     chartInstance.current = new Chart(ctx, {
-      type: 'line',
+      type: 'bar',
       data: {
         labels,
         datasets: [
           {
             label: 'Income',
             data: incomeData,
-            borderColor: colors.green,
-            backgroundColor: 'rgba(42, 122, 58, 0.15)',
-            fill: true,
-            tension: 0.35,
-            pointRadius: 3,
-            pointHoverRadius: 6,
-            borderWidth: 2
+            backgroundColor: colors.green,
+            borderRadius: 4,
+            maxBarThickness: 34
           },
           {
             label: 'Expenses',
             data: expenseData,
-            borderColor: colors.red,
-            backgroundColor: 'rgba(176, 48, 32, 0.15)',
-            fill: true,
-            tension: 0.35,
-            pointRadius: 3,
-            pointHoverRadius: 6,
-            borderWidth: 2
+            backgroundColor: colors.red,
+            borderRadius: 4,
+            maxBarThickness: 34
           },
           {
             label: 'Net Profit',
             data: profitData,
-            borderColor: colors.blue,
-            backgroundColor: 'rgba(26, 90, 138, 0.15)',
-            fill: true,
-            tension: 0.35,
-            pointRadius: 3,
-            pointHoverRadius: 6,
-            borderWidth: 2
+            backgroundColor: colors.blue,
+            borderRadius: 4,
+            maxBarThickness: 34
           }
         ]
       },
@@ -115,7 +103,7 @@ const MonthlyFinanceChart = () => {
         responsive: true,
         maintainAspectRatio: false,
         resizeDelay: 200,
-        animation: { duration: 500 },
+        animation: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: {
@@ -186,13 +174,13 @@ const MonthlyFinanceChart = () => {
   const handleDownload = () => {
     const { labels, incomeData, expenseData, profitData } = buildSeries(db);
     downloadChartPng((ctx, colors) => ({
-      type: 'line',
+      type: 'bar',
       data: {
         labels,
         datasets: [
-          { label: 'Income', data: incomeData, borderColor: colors.green, backgroundColor: 'rgba(42,122,58,0.15)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2 },
-          { label: 'Expenses', data: expenseData, borderColor: colors.red, backgroundColor: 'rgba(176,48,32,0.15)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2 },
-          { label: 'Net Profit', data: profitData, borderColor: colors.blue, backgroundColor: 'rgba(26,90,138,0.15)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2 }
+          { label: 'Income', data: incomeData, backgroundColor: colors.green, borderRadius: 4, maxBarThickness: 34 },
+          { label: 'Expenses', data: expenseData, backgroundColor: colors.red, borderRadius: 4, maxBarThickness: 34 },
+          { label: 'Net Profit', data: profitData, backgroundColor: colors.blue, borderRadius: 4, maxBarThickness: 34 }
         ]
       },
       options: {

@@ -105,16 +105,8 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
       alert('Follow-up date cannot be before the event date.');
       return;
     }
-    if (formData.eventType === 'Vaccination' && !formData.vaccineType.trim()) {
-      alert('Enter the vaccine name.');
-      return;
-    }
-    if (formData.eventType === 'Vaccination' && !formData.dosage.trim()) {
-      alert('Enter the administered dose.');
-      return;
-    }
-    if (formData.eventType === 'Sold' && (!formData.salePrice || Number(formData.salePrice) <= 0)) {
-      alert('Enter a sale price greater than zero.');
+    if (formData.eventType === 'Sold' && formData.salePrice && Number(formData.salePrice) <= 0) {
+      alert('Sale price must be greater than zero when provided.');
       return;
     }
     if (formData.eventType === 'Weight recorded' && (!formData.weight || Number(formData.weight) <= 0)) {
@@ -333,7 +325,7 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
           <div className="form-grid mt1">
             <div className="fg">
               <label>Sale price (KES) *</label>
-              <input type="number" min="0" step="any" name="salePrice" value={formData.salePrice || ''} onChange={handleChange} placeholder="Total received" required />
+              <input type="number" min="0" step="any" name="salePrice" value={formData.salePrice || ''} onChange={handleChange} placeholder="Optional — enter if known" />
             </div>
             <div className="fg">
               <label>Buyer / market</label>
@@ -406,7 +398,7 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
             <SelectOrOther label="Vaccine Type" name="vaccineType" value={formData.vaccineType} onChange={handleChange} options={vaccines} />
             <div className="fg">
               <label>Dose given *</label>
-              <input name="dosage" value={formData.dosage} onChange={handleChange} placeholder="Dose and unit from label / vet" required />
+              <input name="dosage" value={formData.dosage} onChange={handleChange} placeholder="Dose and unit from label / vet (optional)" />
             </div>
             <SelectOrOther label="Administration route" name="vaccineRoute" value={formData.vaccineRoute} onChange={handleChange} options={['Intramuscular', 'Subcutaneous', 'Oral', 'Intranasal']} />
             <div className="fg"><label>Batch / lot number</label><input name="vaccineBatch" value={formData.vaccineBatch} onChange={handleChange} /></div>

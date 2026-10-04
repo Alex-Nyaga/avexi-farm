@@ -81,8 +81,8 @@ const Potatoes = () => {
       alert('Record a harvest before recording a crop sale.');
       return;
     }
-    if (activityForm.activity === 'Sale' && revenue <= 0) {
-      alert('Enter total sale proceeds greater than zero.');
+    if (activityForm.activity === 'Sale' && activityForm.revenue && revenue <= 0) {
+      alert('Sale proceeds must be greater than zero when provided.');
       return;
     }
     const canPrecedePlanting = ['Land preparation', 'Field preparation'].includes(activityForm.activity);
@@ -287,7 +287,7 @@ const Potatoes = () => {
             )}
             {activityForm.activity && (
               activityForm.activity === 'Sale'
-                ? <div className="fg"><label>Total sale proceeds (KES) *</label><input type="number" min="0.01" step="any" name="revenue" value={activityForm.revenue} onChange={changeActivityField} placeholder="Total sale proceeds" required /></div>
+                ? <div className="fg"><label>Total sale proceeds (KES)</label><input type="number" min="0" step="any" name="revenue" value={activityForm.revenue} onChange={changeActivityField} placeholder="Optional — enter total if known" /></div>
                 : <div className="fg"><label>Activity cost (KES)</label><input type="number" min="0" step="any" name="cost" value={activityForm.cost} onChange={changeActivityField} placeholder="0" /></div>
             )}
             <div className="fg fg-full"><label>Notes</label><textarea value={activityForm.notes} onChange={(e) => setActivityForm({ ...activityForm, notes: e.target.value })} placeholder="Products used, labour, or observations" /></div>
