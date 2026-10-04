@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { buildNotifications } from '../utils/notifications';
 
-const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
+const DEMO_MODE = __DEMO_MODE__;
 
 const AppContext = createContext();
 
