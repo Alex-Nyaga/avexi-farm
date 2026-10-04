@@ -21,7 +21,20 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
     offspringSex: 'Male',
     updateDeworming: 'yes',
     vaccineType: '',
-    nextVaccination: ''
+    nextVaccination: '',
+    vaccineBatch: '',
+    vaccineRoute: '',
+    administeredBy: '',
+    withdrawalPeriod: '',
+    diagnosis: '',
+    weight: '',
+    weightUnit: 'kg',
+    breedingMethod: '',
+    sire: '',
+    outcome: '',
+    heatObserved: '',
+    semenBatch: '',
+    followUpDate: ''
   });
 
   const isCow = type === 'cow';
@@ -41,7 +54,9 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
   };
 
   const drugs = ['Ivermectin', 'Albendazole', 'Oxytetracycline', 'Penicillin-Streptomycin', 'Copper sulphate', 'Dexamethasone', 'Multivitamin'];
-  const vaccines = ['FMD', 'Lumpy skin disease', 'Anthrax', 'Black quarter', 'Brucellosis', 'East Coast Fever', 'Rift Valley Fever', 'PPR', 'Sheep pox'];
+  const vaccines = isCow
+    ? ['Foot-and-mouth disease (FMD)', 'Lumpy skin disease', 'East Coast fever', 'Anthrax', 'Black quarter', 'Brucellosis']
+    : ['Peste des petits ruminants (PPR)', 'Sheep / goat pox', 'Anthrax', 'Enterotoxaemia', 'Contagious caprine pleuropneumonia'];
   const causes = ['Disease', 'Injury', 'Bloat', 'Birth complications', 'Poisoning', 'Predator', 'Old age', 'Unknown'];
 
   const events = isCow 
@@ -86,6 +101,26 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
       alert('Next vaccination must be after this event date.');
       return;
     }
+    if (formData.followUpDate && formData.followUpDate < formData.date) {
+      alert('Follow-up date cannot be before the event date.');
+      return;
+    }
+    if (formData.eventType === 'Vaccination' && !formData.vaccineType.trim()) {
+      alert('Enter the vaccine name.');
+      return;
+    }
+    if (formData.eventType === 'Vaccination' && !formData.dosage.trim()) {
+      alert('Enter the administered dose.');
+      return;
+    }
+    if (formData.eventType === 'Sold' && (!formData.salePrice || Number(formData.salePrice) <= 0)) {
+      alert('Enter a sale price greater than zero.');
+      return;
+    }
+    if (formData.eventType === 'Weight recorded' && (!formData.weight || Number(formData.weight) <= 0)) {
+      alert('Enter a weight greater than zero.');
+      return;
+    }
 
     const eventList = isCow ? 'cowEvents' : 'sheepEvents';
     const cost = Number(formData.cost) || 0;
@@ -106,6 +141,19 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
       offspringSex: formData.offspringSex,
       vaccineType: formData.vaccineType,
       nextVaccination: formData.nextVaccination,
+      vaccineBatch: formData.vaccineBatch,
+      vaccineRoute: formData.vaccineRoute,
+      administeredBy: formData.administeredBy,
+      withdrawalPeriod: formData.withdrawalPeriod,
+      diagnosis: formData.diagnosis,
+      weight: formData.weight ? Number(formData.weight) : '',
+      weightUnit: formData.weightUnit,
+      breedingMethod: formData.breedingMethod,
+      sire: formData.sire,
+      outcome: formData.outcome,
+      heatObserved: formData.heatObserved,
+      semenBatch: formData.semenBatch,
+      followUpDate: formData.followUpDate,
       createdAt: today()
     };
 
@@ -225,6 +273,16 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
       }
     }
 
+    if (formData.eventType === 'Sold' || formData.eventType === 'Death') {
+      const finalStatus = formData.eventType === 'Sold' ? 'sold' : 'dead';
+      if (isCow) {
+        updatedDb.cows = updatedDb.cows.map((animal) => animal.id === formData.animalId ? { ...animal, status: finalStatus } : animal);
+        updatedDb.calves = updatedDb.calves.map((animal) => animal.id === formData.animalId ? { ...animal, status: finalStatus } : animal);
+      } else {
+        updatedDb.sheep = updatedDb.sheep.map((animal) => animal.id === formData.animalId ? { ...animal, status: finalStatus } : animal);
+      }
+    }
+
     setDb(updatedDb);
     sdb();
     onClose();
@@ -252,33 +310,52 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
             <input type="date" name="date" value={formData.date} onChange={handleChange} max={today()} min={([...db.cows, ...db.calves, ...db.sheep].find((a) => a.id === formData.animalId) || {}).dob || undefined} required />
           </div>
           <SelectOrOther label="Event Type" required name="eventType" value={formData.eventType} onChange={handleChange} options={events} />
-          <SelectOrOther label="Drug / Product" name="drug" value={formData.drug} onChange={handleChange} options={drugs} />
-          <div className="fg">
-            <label>Dosage / Quantity</label>
-            <input name="dosage" value={formData.dosage || ''} onChange={handleChange} placeholder="e.g. 5ml, 2 tablets" />
-          </div>
-          <div className="fg">
-            <label>Cost (KES)</label>
-            <input type="number" name="cost" value={formData.cost || ''} onChange={handleChange} placeholder="0" />
-          </div>
         </div>
 
         {/* Event-specific fields */}
+        {['Health check', 'Deworming', 'Treatment'].includes(formData.eventType) && (
+          <div className="form-grid mt1">
+            <div className="fg"><label>Reason / diagnosis</label><input name="diagnosis" value={formData.diagnosis} onChange={handleChange} placeholder="Symptoms or reason for treatment" /></div>
+            {formData.eventType !== 'Health check' && (
+              <>
+                <SelectOrOther label="Medicine / product" name="drug" value={formData.drug} onChange={handleChange} options={drugs} />
+                <div className="fg"><label>Dose given</label><input name="dosage" value={formData.dosage} onChange={handleChange} placeholder="Dose and unit, e.g. 5 ml" /></div>
+                <SelectOrOther label="Administration route" name="vaccineRoute" value={formData.vaccineRoute} onChange={handleChange} options={['Oral', 'Intramuscular', 'Subcutaneous', 'Topical', 'Other']} />
+                <div className="fg"><label>Withdrawal period (as on product label)</label><input name="withdrawalPeriod" value={formData.withdrawalPeriod} onChange={handleChange} placeholder="e.g. 7 days or not applicable" /></div>
+              </>
+            )}
+            <div className="fg"><label>Veterinary / treatment cost (KES)</label><input type="number" min="0" step="any" name="cost" value={formData.cost} onChange={handleChange} placeholder="0" /></div>
+            <div className="fg"><label>Follow-up date</label><input type="date" name="followUpDate" value={formData.followUpDate} onChange={handleChange} min={formData.date} /></div>
+          </div>
+        )}
+
         {formData.eventType === 'Sold' && (
           <div className="form-grid mt1">
             <div className="fg">
-              <label>Sale Price (KES) *</label>
-              <input type="number" name="salePrice" value={formData.salePrice || ''} onChange={handleChange} placeholder="0" required />
+              <label>Sale price (KES) *</label>
+              <input type="number" min="0" step="any" name="salePrice" value={formData.salePrice || ''} onChange={handleChange} placeholder="Total received" required />
             </div>
             <div className="fg">
-              <label>Buyer Name</label>
+              <label>Buyer / market</label>
               <input name="buyer" value={formData.buyer || ''} onChange={handleChange} placeholder="Buyer name" />
             </div>
+            <SelectOrOther label="Sales channel" name="outcome" value={formData.outcome} onChange={handleChange} options={['Farm gate', 'Auction', 'Market', 'Cooperative', 'Contract']} />
           </div>
         )}
 
         {formData.eventType === 'Death' && (
-          <div className="mt1"><SelectOrOther label="Cause of Death" required name="cause" value={formData.cause} onChange={handleChange} options={causes} /></div>
+          <div className="form-grid mt1">
+            <SelectOrOther label="Cause of Death" required name="cause" value={formData.cause} onChange={handleChange} options={causes} />
+            <div className="fg"><label>Action / vet contacted</label><input name="diagnosis" value={formData.diagnosis} onChange={handleChange} /></div>
+          </div>
+        )}
+
+        {formData.eventType === 'Weight recorded' && (
+          <div className="form-grid mt1">
+            <div className="fg"><label>Weight *</label><input type="number" min="0" step="any" name="weight" value={formData.weight} onChange={handleChange} required /></div>
+            <SelectOrOther label="Weight unit" name="weightUnit" value={formData.weightUnit} onChange={handleChange} options={['kg', 'g']} />
+            <div className="fg"><label>Body condition / notes</label><input name="outcome" value={formData.outcome} onChange={handleChange} /></div>
+          </div>
         )}
 
         {(formData.eventType === 'Calving' || formData.eventType === 'Lambing') && (
@@ -298,6 +375,22 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
           </div>
         )}
 
+        {['Breeding/AI', 'Breeding', 'Pregnancy check'].includes(formData.eventType) && (
+          <div className="form-grid mt1">
+            {formData.eventType !== 'Pregnancy check' && (
+              <>
+                <SelectOrOther label="Breeding method" name="breedingMethod" value={formData.breedingMethod} onChange={handleChange} options={isCow ? ['Natural service', 'Artificial insemination'] : ['Natural mating', 'Artificial insemination']} />
+                <div className="fg"><label>Heat observed / service notes</label><input name="heatObserved" value={formData.heatObserved} onChange={handleChange} /></div>
+                <div className="fg"><label>Sire / bull / ram ID</label><input name="sire" value={formData.sire} onChange={handleChange} /></div>
+                {formData.breedingMethod === 'Artificial insemination' && <div className="fg"><label>Semen batch / straw ID</label><input name="semenBatch" value={formData.semenBatch} onChange={handleChange} /></div>}
+              </>
+            )}
+            <SelectOrOther label={formData.eventType === 'Pregnancy check' ? 'Pregnancy result' : 'Outcome (if checked)'} name="outcome" value={formData.outcome} onChange={handleChange} options={['Pregnant', 'Not pregnant', 'Recheck advised', 'Unknown']} />
+            <div className="fg"><label>Follow-up / expected date</label><input type="date" name="followUpDate" value={formData.followUpDate} onChange={handleChange} min={formData.date} /></div>
+            {formData.eventType !== 'Pregnancy check' && <div className="fg"><label>Breeding / AI cost (KES)</label><input type="number" min="0" step="any" name="cost" value={formData.cost} onChange={handleChange} placeholder="0" /></div>}
+          </div>
+        )}
+
         {formData.eventType === 'Deworming' && (
           <div className="fg fg-full mt1">
             <label>Update last deworming date on animal?</label>
@@ -312,9 +405,18 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
           <div className="form-grid mt1">
             <SelectOrOther label="Vaccine Type" name="vaccineType" value={formData.vaccineType} onChange={handleChange} options={vaccines} />
             <div className="fg">
-              <label>Next vaccination date</label>
-              <input type="date" name="nextVaccination" value={formData.nextVaccination || ''} onChange={handleChange} />
+              <label>Dose given *</label>
+              <input name="dosage" value={formData.dosage} onChange={handleChange} placeholder="Dose and unit from label / vet" required />
             </div>
+            <SelectOrOther label="Administration route" name="vaccineRoute" value={formData.vaccineRoute} onChange={handleChange} options={['Intramuscular', 'Subcutaneous', 'Oral', 'Intranasal']} />
+            <div className="fg"><label>Batch / lot number</label><input name="vaccineBatch" value={formData.vaccineBatch} onChange={handleChange} /></div>
+            <div className="fg"><label>Administered by</label><input name="administeredBy" value={formData.administeredBy} onChange={handleChange} placeholder="Name of worker or vet" /></div>
+            <div className="fg"><label>Vaccination cost (KES)</label><input type="number" min="0" step="any" name="cost" value={formData.cost} onChange={handleChange} placeholder="0" /></div>
+            <div className="fg">
+              <label>Next dose date (as advised)</label>
+              <input type="date" name="nextVaccination" value={formData.nextVaccination || ''} onChange={handleChange} min={formData.date} />
+            </div>
+            <div className="fg fg-full"><label>Withdrawal period (as on product label)</label><input name="withdrawalPeriod" value={formData.withdrawalPeriod} onChange={handleChange} placeholder="Record label / veterinary advice; leave blank if none" /></div>
           </div>
         )}
 

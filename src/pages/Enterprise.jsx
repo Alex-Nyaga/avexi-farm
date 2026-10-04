@@ -2,14 +2,23 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import Modal from '../components/Modal';
 import SelectOrOther from '../components/SelectOrOther';
+import ActivityDetails from '../components/ActivityDetails';
 import { ACTIVITIES, UNITS } from '../utils/catalogue';
+import { formatActivityDetail, schemaForActivity } from '../utils/activitySchemas';
 import { getEnterprises } from '../utils/enterprises';
 import { uid, today, fd, ksh } from '../utils/helpers';
 
 const START = { animal: ['Purchase / Stocking', 'Birth / Hatching'], crop: ['Planting / Sowing'] };
-const END = { animal: ['Sale', 'Mortality', 'Culling'], crop: ['Harvest'] };
+const PRE_PLANTING = ['Land preparation', 'Field preparation'];
 
-const blank = () => ({ date: today(), activity: '', quantity: '', unit: '', money: '', party: '', notes: '' });
+const blank = () => ({ date: today(), activity: '', quantity: '', unit: '', money: '', party: '', details: {}, notes: '' });
+const activityQuantity = (record) => {
+  if (record.quantity !== '' && record.quantity != null) return `${record.quantity} ${record.unit || ''}`.trim();
+  const d = record.details || {};
+  const quantity = d.yield ?? d.quantitySold ?? d.quantityProduced ?? d.weight ?? d.quantityFed ?? d.seedQuantity ?? d.headCount ?? d.headCountSold;
+  const unit = d.yieldUnit ?? d.saleUnit ?? d.productionUnit ?? d.weightUnit ?? d.feedUnit ?? d.seedUnit ?? (quantity === d.headCount || quantity === d.headCountSold ? 'animals' : '');
+  return quantity !== undefined && quantity !== '' ? `${quantity} ${unit || ''}`.trim() : '—';
+};
 
 // Generic record keeper for every catalogue enterprise that has no dedicated page.
 const Enterprise = ({ enterpriseId }) => {
@@ -32,8 +41,19 @@ const Enterprise = ({ enterpriseId }) => {
     .filter((r) => r.enterpriseId === enterpriseId)
     .sort((a, b) => b.date.localeCompare(a.date));
   const canMoney = isAdminOrOwner();
-  const isIncome = (a) => /sale|harvest|production/i.test(a) && !/mortality|cull/i.test(a);
-  const set = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const isIncome = (a) => /^sale$/i.test(a);
+  const set = (e) => {
+    if (e.target.name.startsWith('details.')) {
+      const key = e.target.name.slice(8);
+      setForm((f) => ({ ...f, details: { ...f.details, [key]: e.target.value } }));
+      return;
+    }
+    if (e.target.name === 'activity') {
+      setForm((f) => ({ ...f, activity: e.target.value, details: {} }));
+      return;
+    }
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
 
   const openNew = () => { setEditId(null); setForm(blank()); setError(''); setOpen(true); };
   const openEdit = (r) => { setEditId(r.id); setForm({ ...blank(), ...r, quantity: r.quantity ?? '', money: r.money ?? '' }); setError(''); setOpen(true); };
@@ -44,18 +64,42 @@ const Enterprise = ({ enterpriseId }) => {
     if (!form.date) return 'Choose a date.';
     if (form.date > today()) return 'The date cannot be in the future.';
     if (!form.activity) return 'Choose an activity.';
+    for (const field of schemaForActivity(kind, form.activity, enterprise.category)) {
+      if (field.required && !String(form.details?.[field.name] ?? '').trim()) return `${field.label} is required.`;
+      if (field.required && field.type === 'number' && Number(form.details[field.name]) <= 0) return `${field.label} must be greater than zero.`;
+    }
     const others = records.filter((r) => r.id !== editId);
     const starts = others.filter((r) => START[kind].includes(r.activity)).map((r) => r.date).sort();
-    if (START[kind].includes(form.activity) === false && starts.length && form.date < starts[0]) {
+    const isPrePlanting = kind === 'crop' && PRE_PLANTING.includes(form.activity);
+    if (!START[kind].includes(form.activity) && !isPrePlanting && starts.length && form.date < starts[0]) {
       return `This cannot be dated before ${kind === 'crop' ? 'planting' : 'stocking'} (${fd(starts[0])}).`;
     }
-    if (END[kind].includes(form.activity) && !starts.length) {
-      return `Record ${kind === 'crop' ? 'planting' : 'stocking / birth'} first — ${form.activity.toLowerCase()} needs an earlier start date.`;
+    if (kind === 'animal' && !START.animal.includes(form.activity) && !starts.length) {
+      return `Record animal stocking or birth first — ${form.activity.toLowerCase()} needs an earlier start date.`;
     }
-    if (END[kind].includes(form.activity) && starts.length && form.date < starts[0]) {
+    if (kind === 'crop' && form.activity === 'Harvest' && !starts.length) {
+      return 'Record planting first — harvest needs an earlier planting date.';
+    }
+    if (kind === 'crop' && form.activity === 'Sale') {
+      if (!form.money || Number(form.money) <= 0) return 'Enter total sale proceeds greater than zero.';
+      const harvests = others.filter((r) => r.activity === 'Harvest').map((r) => r.date).sort();
+      if (!harvests.length) return 'Record a harvest before recording a crop sale.';
+      if (form.date < harvests[0]) return `A crop sale cannot be dated before harvest (${fd(harvests[0])}).`;
+    }
+    if ((kind === 'crop' && form.activity === 'Harvest' || kind === 'animal' && ['Sale', 'Mortality', 'Culling'].includes(form.activity)) && starts.length && form.date < starts[0]) {
       return `${form.activity} (${fd(form.date)}) cannot be before ${fd(starts[0])}.`;
     }
     if (form.money !== '' && Number(form.money) < 0) return 'Amount cannot be negative.';
+    if (kind === 'crop' && form.activity === 'Harvest') {
+      const sprays = others.filter((record) => record.activity === 'Spraying' && Number(record.details?.preHarvestInterval) > 0);
+      for (const spray of sprays) {
+        const safeDate = new Date(`${spray.date}T12:00:00`);
+        safeDate.setDate(safeDate.getDate() + Number(spray.details.preHarvestInterval));
+        if (new Date(`${form.date}T12:00:00`) < safeDate) {
+          return `Harvest must wait until the product's ${spray.details.preHarvestInterval}-day pre-harvest interval has passed (${fd(safeDate.toISOString().slice(0, 10))}).`;
+        }
+      }
+    }
     return '';
   };
 
@@ -72,6 +116,7 @@ const Enterprise = ({ enterpriseId }) => {
       quantity: form.quantity === '' ? '' : Number(form.quantity),
       unit: form.unit,
       notes: form.notes,
+      details: form.details || {},
       party: canMoney ? form.party : old?.party || '',
       money: canMoney ? (form.money === '' ? '' : Number(form.money)) : old?.money ?? '',
       createdAt: old?.createdAt || new Date().toISOString()
@@ -85,8 +130,8 @@ const Enterprise = ({ enterpriseId }) => {
         rec.transactionId = txId;
         transactions = [...transactions, {
           id: txId, type: income ? 'income' : 'expense', date: rec.date, amount: rec.money,
-          category: income ? (kind === 'crop' ? 'Crop Sale' : 'Animal Sale') : 'Other Expense', source: enterprise.name, enterpriseId,
-          desc: `${rec.activity} — ${enterprise.name}${rec.party ? ` (${rec.party})` : ''}`
+          category: income ? (kind === 'crop' ? 'Crop Sale' : 'Animal Sale') : (kind === 'crop' ? 'Crop inputs' : 'Animal care'), source: enterprise.name, enterpriseId,
+          desc: `${rec.activity} — ${enterprise.name}${rec.details?.buyer ? ` (${rec.details.buyer})` : rec.party ? ` (${rec.party})` : ''}`
         }];
       } else {
         delete rec.transactionId;
@@ -140,10 +185,10 @@ const Enterprise = ({ enterpriseId }) => {
                   <tr key={r.id}>
                     <td>{fd(r.date)}</td>
                     <td>{r.activity}</td>
-                    <td>{r.quantity !== '' && r.quantity != null ? `${r.quantity} ${r.unit || ''}` : '—'}</td>
+                    <td>{activityQuantity(r)}</td>
                     {canMoney && <td>{r.money ? ksh(r.money) : '—'}</td>}
-                    {canMoney && <td>{r.party || '—'}</td>}
-                    <td>{r.notes || '—'}</td>
+                    {canMoney && <td>{r.details?.buyer || r.party || '—'}</td>}
+                    <td>{[r.notes, ...Object.entries(r.details || {}).filter(([, value]) => value !== '' && value != null).map(([key, value]) => `${formatActivityDetail(key)}: ${value}`)].filter(Boolean).join(' · ') || '—'}</td>
                     <td className="row-actions">
                       {canMoney && <button className="btn btn-outline btn-xs" onClick={() => openEdit(r)}>Edit</button>}
                       {canMoney && <button className="btn btn-danger btn-xs" onClick={() => remove(r)}>Delete</button>}
@@ -165,20 +210,22 @@ const Enterprise = ({ enterpriseId }) => {
               <input type="date" name="date" value={form.date} onChange={set} max={today()} required />
             </div>
             <SelectOrOther label="Activity" required name="activity" value={form.activity} onChange={set} options={ACTIVITIES[kind]} />
-            <div className="fg">
-              <label>Quantity</label>
-              <input type="number" min="0" step="any" name="quantity" value={form.quantity} onChange={set} placeholder="0" />
-            </div>
-            <SelectOrOther label="Unit" name="unit" value={form.unit} onChange={set} options={UNITS[kind]} />
-            {canMoney && (
+            {schemaForActivity(kind, form.activity, enterprise.category).length ? (
+              <ActivityDetails kind={kind} activity={form.activity} category={enterprise.category} value={form.details} onChange={set} />
+            ) : (
               <>
                 <div className="fg">
-                  <label>Amount (KES)</label>
-                  <input type="number" min="0" name="money" value={form.money} onChange={set} placeholder="Leave blank if none" />
+                  <label>Quantity</label>
+                  <input type="number" min="0" step="any" name="quantity" value={form.quantity} onChange={set} placeholder="0" />
                 </div>
+                <SelectOrOther label="Unit" name="unit" value={form.unit} onChange={set} options={UNITS[kind]} />
+              </>
+            )}
+            {canMoney && form.activity && (
+              <>
                 <div className="fg">
-                  <label>Buyer / supplier</label>
-                  <input name="party" value={form.party} onChange={set} placeholder="Name" />
+                  <label>{isIncome(form.activity) ? 'Sale proceeds (KES)' : 'Activity cost (KES)'}</label>
+                  <input type="number" min={isIncome(form.activity) ? '0.01' : '0'} step="any" name="money" value={form.money} onChange={set} placeholder={isIncome(form.activity) ? 'Total sale proceeds' : 'Optional'} required={isIncome(form.activity)} />
                 </div>
               </>
             )}

@@ -3,17 +3,32 @@ import Modal from '../components/Modal';
 import { useApp } from '../context/AppContext';
 import { fd, today, uid } from '../utils/helpers';
 import SelectOrOther from '../components/SelectOrOther';
+import ActivityDetails from '../components/ActivityDetails';
+import { formatActivityDetail, schemaForActivity } from '../utils/activitySchemas';
 
-const CROP_ACTIVITIES = ['Land preparation', 'Planting', 'Weeding', 'Spraying', 'Fertilizer application', 'Hilling / earthing up', 'Harvest'];
+const CROP_ACTIVITIES = ['Land preparation', 'Planting', 'Weeding', 'Spraying', 'Fertilizer application', 'Hilling / earthing up', 'Pest / disease scouting', 'Harvest', 'Sale'];
 
 const Potatoes = () => {
   const { db, isAdminOrOwner, setDb, sdb } = useApp();
   const [showPlotForm, setShowPlotForm] = useState(false);
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [plotForm, setPlotForm] = useState({ name: '', variety: '', plantedDate: today() });
-  const [activityForm, setActivityForm] = useState({ plotId: '', date: today(), activity: '', notes: '', cost: '' });
+  const [activityForm, setActivityForm] = useState({ plotId: '', date: today(), activity: '', notes: '', cost: '', revenue: '', details: {} });
 
   const activeSeasons = db.plotSeasons.filter((season) => season.status === 'active');
+  const recordableSeasons = db.plotSeasons.filter((season) => season.status === 'active' || season.status === 'harvested');
+
+  const changeActivityField = (event) => {
+    const { name, value } = event.target;
+    if (name.startsWith('details.')) {
+      const key = name.slice(8);
+      setActivityForm((form) => ({ ...form, details: { ...form.details, [key]: value } }));
+    } else if (name === 'activity') {
+      setActivityForm((form) => ({ ...form, activity: value, details: {}, revenue: '' }));
+    } else {
+      setActivityForm((form) => ({ ...form, [name]: value }));
+    }
+  };
 
   const savePlot = async (event) => {
     event.preventDefault();
@@ -43,16 +58,61 @@ const Potatoes = () => {
     event.preventDefault();
     if (!activityForm.plotId || !activityForm.activity.trim()) return;
 
-    const season = activeSeasons.find((item) => item.id === activityForm.plotId);
+    const cost = Number(activityForm.cost) || 0;
+    const revenue = Number(activityForm.revenue) || 0;
+    const season = recordableSeasons.find((item) => item.id === activityForm.plotId);
+    if (!season) return;
+    if (activityForm.date > today()) {
+      alert('Activity date cannot be in the future.');
+      return;
+    }
+    for (const field of schemaForActivity('crop', activityForm.activity)) {
+      if (field.required && !String(activityForm.details?.[field.name] ?? '').trim()) {
+        alert(`${field.label} is required.`);
+        return;
+      }
+      if (field.required && field.type === 'number' && Number(activityForm.details[field.name]) <= 0) {
+        alert(`${field.label} must be greater than zero.`);
+        return;
+      }
+    }
 
-    // Agricultural sequencing check: a season's field activities (e.g. harvest)
-    // can never be logged on a date earlier than when it was planted.
-    if (activityForm.date < season.plantedDate) {
+    if (activityForm.activity === 'Sale' && !db.cropActivities.some((record) => record.seasonId === season.id && record.activity === 'Harvest')) {
+      alert('Record a harvest before recording a crop sale.');
+      return;
+    }
+    if (activityForm.activity === 'Sale' && revenue <= 0) {
+      alert('Enter total sale proceeds greater than zero.');
+      return;
+    }
+    const canPrecedePlanting = ['Land preparation', 'Field preparation'].includes(activityForm.activity);
+    if (!canPrecedePlanting && activityForm.date < season.plantedDate) {
       alert(`This activity date (${fd(activityForm.date)}) is before the plot's planting date (${fd(season.plantedDate)}). Please check the date.`);
       return;
     }
+    if (activityForm.activity === 'Sale') {
+      const harvest = db.cropActivities.find((record) => record.seasonId === season.id && record.activity === 'Harvest');
+      if (harvest && activityForm.date < harvest.date) {
+        alert(`A sale cannot be dated before harvest (${fd(harvest.date)}).`);
+        return;
+      }
+    }
+    if (activityForm.activity === 'Harvest') {
+      const sprayRecords = db.cropActivities.filter((record) => record.seasonId === season.id && record.activity === 'Spraying' && Number(record.details?.preHarvestInterval) > 0);
+      for (const spray of sprayRecords) {
+        const safeHarvestDate = new Date(`${spray.date}T12:00:00`);
+        safeHarvestDate.setDate(safeHarvestDate.getDate() + Number(spray.details.preHarvestInterval));
+        if (new Date(`${activityForm.date}T12:00:00`) < safeHarvestDate) {
+          alert(`Harvest must wait until the product's ${spray.details.preHarvestInterval}-day pre-harvest interval has passed (${fd(safeHarvestDate.toISOString().slice(0, 10))}).`);
+          return;
+        }
+      }
+    }
+    if (season.status === 'harvested' && activityForm.activity !== 'Sale') {
+      alert('This season is marked as harvested. Only sales can be recorded now.');
+      return;
+    }
 
-    const cost = Number(activityForm.cost) || 0;
     const activity = {
       id: uid(),
       seasonId: season.id,
@@ -61,14 +121,25 @@ const Potatoes = () => {
       date: activityForm.date,
       activity: activityForm.activity.trim(),
       notes: activityForm.notes.trim(),
-      cost,
+      cost: activityForm.activity === 'Sale' ? revenue : cost,
+      details: activityForm.details || {},
       createdAt: new Date().toISOString()
     };
     const updatedDb = {
       ...db,
       cropActivities: [...db.cropActivities, activity]
     };
-    if (cost > 0) {
+    if (activityForm.activity === 'Sale' && revenue > 0) {
+      updatedDb.transactions = [...db.transactions, {
+        id: uid(),
+        type: 'income',
+        date: activityForm.date,
+        amount: revenue,
+        source: activity.details?.buyer || 'Crop sale',
+        category: 'Crop Sale',
+        desc: `Sale — ${season.plotName}${activity.details?.buyer ? ` (${activity.details.buyer})` : ''}`
+      }];
+    } else if (cost > 0) {
       updatedDb.transactions = [...db.transactions, {
         id: uid(),
         type: 'expense',
@@ -95,7 +166,7 @@ const Potatoes = () => {
     setDb(updatedDb);
     await sdb();
     setShowActivityForm(false);
-    setActivityForm({ plotId: '', date: today(), activity: '', notes: '', cost: '' });
+    setActivityForm({ plotId: '', date: today(), activity: '', notes: '', cost: '', revenue: '', details: {} });
   };
 
   return (
@@ -111,7 +182,7 @@ const Potatoes = () => {
         {isAdminOrOwner() && (
           <div className="page-actions">
             <button className="btn btn-primary btn-sm" onClick={() => setShowPlotForm(true)}>Add plot</button>
-            <button className="btn btn-outline btn-sm" onClick={() => setShowActivityForm(true)} disabled={!activeSeasons.length}>
+            <button className="btn btn-outline btn-sm" onClick={() => setShowActivityForm(true)} disabled={!recordableSeasons.length}>
               Log activity
             </button>
           </div>
@@ -157,11 +228,12 @@ const Potatoes = () => {
         ) : (
           <div className="tbl-wrap">
             <table>
-              <thead><tr><th>Date</th><th>Plot</th><th>Activity</th><th>Notes</th><th>Cost</th></tr></thead>
+              <thead><tr><th>Date</th><th>Plot</th><th>Activity</th><th>Activity details</th><th>Cost / proceeds</th></tr></thead>
               <tbody>{db.cropActivities.slice().reverse().map((activity) => (
                 <tr key={activity.id}>
                   <td>{fd(activity.date)}</td><td>{activity.plotName}</td><td>{activity.activity}</td>
-                  <td>{activity.notes || '—'}</td><td>{activity.cost ? `KES ${Number(activity.cost).toLocaleString()}` : '—'}</td>
+                  <td>{[activity.notes, ...Object.entries(activity.details || {}).filter(([, value]) => value !== '' && value != null).map(([key, value]) => `${formatActivityDetail(key)}: ${value}`)].filter(Boolean).join(' · ') || '—'}</td>
+                  <td>{activity.cost ? `KES ${Number(activity.cost).toLocaleString()}` : '—'}</td>
                 </tr>
               ))}</tbody>
             </table>
@@ -184,9 +256,9 @@ const Potatoes = () => {
           <div className="form-grid">
             <div className="fg">
               <label>Plot *</label>
-              <select required value={activityForm.plotId} onChange={(e) => setActivityForm({ ...activityForm, plotId: e.target.value })}>
+              <select required name="plotId" value={activityForm.plotId} onChange={changeActivityField}>
                 <option value="">Select plot</option>
-                {activeSeasons.map((season) => <option key={season.id} value={season.id}>{season.plotName}</option>)}
+                {recordableSeasons.map((season) => <option key={season.id} value={season.id}>{season.plotName}{season.status === 'harvested' ? ' (harvested)' : ''}</option>)}
               </select>
             </div>
             <div className="fg">
@@ -194,10 +266,11 @@ const Potatoes = () => {
               <input
                 required
                 type="date"
+                name="date"
                 max={today()}
-                min={activeSeasons.find((s) => s.id === activityForm.plotId)?.plantedDate}
+                min={['Land preparation', 'Field preparation'].includes(activityForm.activity) ? undefined : recordableSeasons.find((s) => s.id === activityForm.plotId)?.plantedDate}
                 value={activityForm.date}
-                onChange={(e) => setActivityForm({ ...activityForm, date: e.target.value })}
+                onChange={changeActivityField}
               />
             </div>
             <SelectOrOther
@@ -205,11 +278,18 @@ const Potatoes = () => {
               required
               name="activity"
               value={activityForm.activity}
-              onChange={(e) => setActivityForm({ ...activityForm, activity: e.target.value })}
+              onChange={changeActivityField}
               options={CROP_ACTIVITIES}
               otherPlaceholder="Describe the activity"
             />
-            <div className="fg"><label>Cost (KES)</label><input type="number" min="0" value={activityForm.cost} onChange={(e) => setActivityForm({ ...activityForm, cost: e.target.value })} placeholder="0" /></div>
+            {schemaForActivity('crop', activityForm.activity).length > 0 && (
+              <ActivityDetails kind="crop" activity={activityForm.activity} value={activityForm.details} onChange={changeActivityField} />
+            )}
+            {activityForm.activity && (
+              activityForm.activity === 'Sale'
+                ? <div className="fg"><label>Total sale proceeds (KES) *</label><input type="number" min="0.01" step="any" name="revenue" value={activityForm.revenue} onChange={changeActivityField} placeholder="Total sale proceeds" required /></div>
+                : <div className="fg"><label>Activity cost (KES)</label><input type="number" min="0" step="any" name="cost" value={activityForm.cost} onChange={changeActivityField} placeholder="0" /></div>
+            )}
             <div className="fg fg-full"><label>Notes</label><textarea value={activityForm.notes} onChange={(e) => setActivityForm({ ...activityForm, notes: e.target.value })} placeholder="Products used, labour, or observations" /></div>
           </div>
           <div className="modal-actions"><button className="btn btn-primary" type="submit">Save activity</button><button className="btn btn-outline" type="button" onClick={() => setShowActivityForm(false)}>Cancel</button></div>
