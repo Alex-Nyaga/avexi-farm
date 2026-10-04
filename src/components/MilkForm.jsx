@@ -9,7 +9,10 @@ const MilkForm = ({ isOpen, onClose, recordId }) => {
     cowId: '',
     date: today(),
     am: '',
-    pm: ''
+    pm: '',
+    soldLitres: '',
+    buyer: '',
+    pricePerLitre: ''
   });
 
   const record = recordId ? db.milkRecords.find(r => r.id === recordId) : null;
@@ -21,14 +24,20 @@ const MilkForm = ({ isOpen, onClose, recordId }) => {
         cowId: record.cowId,
         date: record.date,
         am: record.am || '',
-        pm: record.pm || ''
+        pm: record.pm || '',
+        soldLitres: record.soldLitres || '',
+        buyer: record.buyer || '',
+        pricePerLitre: record.pricePerLitre || ''
       });
     } else {
       setFormData({
         cowId: '',
         date: today(),
         am: '',
-        pm: ''
+        pm: '',
+        soldLitres: '',
+        buyer: '',
+        pricePerLitre: ''
       });
     }
   }, [record, recordId]);
@@ -46,12 +55,22 @@ const MilkForm = ({ isOpen, onClose, recordId }) => {
       return;
     }
 
+    const produced = Number(formData.am || 0) + Number(formData.pm || 0);
+    const sold = Number(formData.soldLitres || 0);
+    if (sold > produced) {
+      alert('Sold litres cannot be more than the milk produced (AM + PM).');
+      return;
+    }
+
     const cow = db.cows.find(c => c.id === formData.cowId);
     const newRecord = {
       ...formData,
       id: recordId || uid(),
       cowTag: cow?.tag || 'Unknown',
-      litres: (Number(formData.am || 0) + Number(formData.pm || 0)).toFixed(1),
+      litres: produced.toFixed(1),
+      soldLitres: sold || 0,
+      buyer: formData.buyer || '',
+      pricePerLitre: Number(formData.pricePerLitre) || 0,
       createdAt: record?.createdAt || today()
     };
 
@@ -73,6 +92,23 @@ const MilkForm = ({ isOpen, onClose, recordId }) => {
         ...db,
         milkRecords: [...db.milkRecords, newRecord]
       };
+    }
+
+    // Auto-log a milk sale income transaction so it flows into Finance/Reports
+    if (sold > 0 && formData.pricePerLitre) {
+      const saleAmount = sold * Number(formData.pricePerLitre);
+      updatedDb.transactions = [
+        ...(updatedDb.transactions || db.transactions),
+        {
+          id: uid(),
+          type: 'income',
+          date: formData.date,
+          amount: saleAmount,
+          source: 'Milk',
+          category: 'Milk Sales',
+          desc: `Sold ${sold}L milk${formData.buyer ? ` to ${formData.buyer}` : ''} (${cow?.tag || 'Unknown'})`
+        }
+      ];
     }
 
     setDb(updatedDb);
@@ -144,6 +180,22 @@ const MilkForm = ({ isOpen, onClose, recordId }) => {
           <div className="fg">
             <label>PM (Litres)</label>
             <input type="number" step="0.1" name="pm" value={formData.pm || ''} onChange={handleChange} placeholder="0" />
+          </div>
+        </div>
+
+        <div className="section-divider">Milk sold (optional)</div>
+        <div className="form-grid">
+          <div className="fg">
+            <label>Litres sold</label>
+            <input type="number" step="0.1" name="soldLitres" value={formData.soldLitres || ''} onChange={handleChange} placeholder="0" />
+          </div>
+          <div className="fg">
+            <label>Price per litre (KES)</label>
+            <input type="number" step="0.1" name="pricePerLitre" value={formData.pricePerLitre || ''} onChange={handleChange} placeholder="0" />
+          </div>
+          <div className="fg fg-full">
+            <label>Sold to (buyer)</label>
+            <input name="buyer" value={formData.buyer || ''} onChange={handleChange} placeholder="e.g. Nyandarua Dairy Cooperative" />
           </div>
         </div>
 

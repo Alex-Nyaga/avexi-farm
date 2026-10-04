@@ -1,5 +1,41 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { getThemeColors } from '../utils/chartTheme';
+import { downloadChartPng } from '../utils/chartExport';
+import ChartDownloadButton from './ChartDownloadButton';
+
+const buildSeries = (db) => {
+  const monthlyData = {};
+
+  db.transactions.forEach(tx => {
+    const date = new Date(tx.date);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = { income: 0, expense: 0 };
+    }
+
+    if (tx.type === 'income') {
+      monthlyData[monthKey].income += Number(tx.amount);
+    } else {
+      monthlyData[monthKey].expense += Number(tx.amount);
+    }
+  });
+
+  const sortedMonths = Object.keys(monthlyData).sort();
+  const labels = sortedMonths.map(monthKey => {
+    const [year, monthNum] = monthKey.split('-');
+    const date = new Date(year, monthNum - 1);
+    return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  });
+
+  return {
+    labels,
+    incomeData: sortedMonths.map(monthKey => monthlyData[monthKey].income),
+    expenseData: sortedMonths.map(monthKey => monthlyData[monthKey].expense),
+    profitData: sortedMonths.map(monthKey => monthlyData[monthKey].income - monthlyData[monthKey].expense)
+  };
+};
 
 const MonthlyFinanceChart = () => {
   const { db, theme } = useApp();
@@ -31,75 +67,45 @@ const MonthlyFinanceChart = () => {
       chartInstance.current.destroy();
     }
 
-    // Prepare data - group by month
-    const monthlyData = {};
-    
-    db.transactions.forEach(tx => {
-      const date = new Date(tx.date);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      
-      if (!monthlyData[monthKey]) {
-        monthlyData[monthKey] = { income: 0, expense: 0 };
-      }
-      
-      if (tx.type === 'income') {
-        monthlyData[monthKey].income += Number(tx.amount);
-      } else {
-        monthlyData[monthKey].expense += Number(tx.amount);
-      }
-    });
-
-    const sortedMonths = Object.keys(monthlyData).sort();
-    const labels = sortedMonths.map(monthKey => {
-      const [year, monthNum] = monthKey.split('-');
-      const date = new Date(year, monthNum - 1);
-      return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-    });
-    
-    const incomeData = sortedMonths.map(monthKey => monthlyData[monthKey].income);
-    const expenseData = sortedMonths.map(monthKey => monthlyData[monthKey].expense);
-    const profitData = sortedMonths.map(monthKey => monthlyData[monthKey].income - monthlyData[monthKey].expense);
-
-    const isDark = theme === 'dark';
-    const textColor = isDark ? '#e8f0ea' : '#111c17';
-    const gridColor = isDark ? '#2a3d30' : '#d8e4db';
+    const { labels, incomeData, expenseData, profitData } = buildSeries(db);
+    const colors = getThemeColors();
 
     const ctx = chartRef.current.getContext('2d');
     chartInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: labels,
+        labels,
         datasets: [
           {
             label: 'Income',
             data: incomeData,
-            borderColor: '#2a7a3a',
+            borderColor: colors.green,
             backgroundColor: 'rgba(42, 122, 58, 0.15)',
             fill: true,
-            tension: 0.4,
-            pointRadius: 4,
+            tension: 0.35,
+            pointRadius: 3,
             pointHoverRadius: 6,
             borderWidth: 2
           },
           {
             label: 'Expenses',
             data: expenseData,
-            borderColor: '#b03020',
+            borderColor: colors.red,
             backgroundColor: 'rgba(176, 48, 32, 0.15)',
             fill: true,
-            tension: 0.4,
-            pointRadius: 4,
+            tension: 0.35,
+            pointRadius: 3,
             pointHoverRadius: 6,
             borderWidth: 2
           },
           {
             label: 'Net Profit',
             data: profitData,
-            borderColor: '#3a7abf',
-            backgroundColor: 'rgba(58, 122, 191, 0.15)',
+            borderColor: colors.blue,
+            backgroundColor: 'rgba(26, 90, 138, 0.15)',
             fill: true,
-            tension: 0.4,
-            pointRadius: 4,
+            tension: 0.35,
+            pointRadius: 3,
             pointHoverRadius: 6,
             borderWidth: 2
           }
@@ -108,22 +114,23 @@ const MonthlyFinanceChart = () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        resizeDelay: 200,
+        animation: { duration: 500 },
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: {
             labels: {
-              color: textColor,
-              font: {
-                size: 12
-              },
+              color: colors.text,
+              font: { size: 12 },
               padding: 15,
               usePointStyle: true
             }
           },
           tooltip: {
-            backgroundColor: isDark ? '#1a2a1e' : '#ffffff',
-            titleColor: textColor,
-            bodyColor: textColor,
-            borderColor: gridColor,
+            backgroundColor: colors.surface,
+            titleColor: colors.text,
+            bodyColor: colors.text,
+            borderColor: colors.border,
             borderWidth: 1,
             padding: 12,
             mode: 'index',
@@ -138,32 +145,32 @@ const MonthlyFinanceChart = () => {
         scales: {
           x: {
             ticks: {
-              color: textColor,
+              color: colors.muted,
               font: { size: 11 },
               maxRotation: 0,
               autoSkip: true,
               maxTicksLimit: 6
             },
             grid: {
-              color: gridColor,
+              color: colors.border,
               drawBorder: false
-            }
+            },
+            title: { display: true, text: 'Month', color: colors.muted, font: { size: 11, weight: '500' } }
           },
           y: {
             ticks: {
-              color: textColor,
-              font: {
-                size: 11
-              },
+              color: colors.muted,
+              font: { size: 11 },
               callback: function(value) {
                 return 'KES ' + value.toLocaleString();
               }
             },
             grid: {
-              color: gridColor,
+              color: colors.border,
               drawBorder: false
             },
-            beginAtZero: true
+            beginAtZero: true,
+            title: { display: true, text: 'Amount (KES)', color: colors.muted, font: { size: 12, weight: '500' } }
           }
         }
       }
@@ -175,6 +182,28 @@ const MonthlyFinanceChart = () => {
       }
     };
   }, [db.transactions, theme, chartLoaded]);
+
+  const handleDownload = () => {
+    const { labels, incomeData, expenseData, profitData } = buildSeries(db);
+    downloadChartPng((ctx, colors) => ({
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Income', data: incomeData, borderColor: colors.green, backgroundColor: 'rgba(42,122,58,0.15)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2 },
+          { label: 'Expenses', data: expenseData, borderColor: colors.red, backgroundColor: 'rgba(176,48,32,0.15)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2 },
+          { label: 'Net Profit', data: profitData, borderColor: colors.blue, backgroundColor: 'rgba(26,90,138,0.15)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2 }
+        ]
+      },
+      options: {
+        plugins: { legend: { labels: { color: colors.text } } },
+        scales: {
+          x: { ticks: { color: colors.text }, grid: { color: colors.border }, title: { display: true, text: 'Month', color: colors.text } },
+          y: { ticks: { color: colors.text }, grid: { color: colors.border }, beginAtZero: true, title: { display: true, text: 'Amount (KES)', color: colors.text } }
+        }
+      }
+    }), { filename: 'monthly-finance-trend.png', title: 'Avexi Farm — Monthly Income, Expenses & Profit' });
+  };
 
   if (!chartLoaded) {
     return (
@@ -201,8 +230,11 @@ const MonthlyFinanceChart = () => {
   }
 
   return (
-    <div className="chart-shell">
-      <canvas ref={chartRef}></canvas>
+    <div className="chart-card">
+      <ChartDownloadButton onClick={handleDownload} />
+      <div className="chart-shell">
+        <canvas ref={chartRef}></canvas>
+      </div>
     </div>
   );
 };

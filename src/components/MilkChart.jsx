@@ -1,5 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { getThemeColors } from '../utils/chartTheme';
+import { downloadChartPng } from '../utils/chartExport';
+import ChartDownloadButton from './ChartDownloadButton';
+
+const buildMilkSeries = (db) => {
+  const milkByDate = {};
+  db.milkRecords.forEach(record => {
+    if (!milkByDate[record.date]) {
+      milkByDate[record.date] = { am: 0, pm: 0, sold: 0 };
+    }
+    milkByDate[record.date].am += Number(record.am || 0);
+    milkByDate[record.date].pm += Number(record.pm || 0);
+    milkByDate[record.date].sold += Number(record.soldLitres || 0);
+  });
+
+  const sortedDates = Object.keys(milkByDate).sort();
+  return {
+    labels: sortedDates,
+    amData: sortedDates.map(date => milkByDate[date].am),
+    pmData: sortedDates.map(date => milkByDate[date].pm),
+    totalData: sortedDates.map(date => milkByDate[date].am + milkByDate[date].pm),
+    soldData: sortedDates.map(date => milkByDate[date].sold)
+  };
+};
 
 const MilkChart = () => {
   const { db, theme } = useApp();
@@ -31,85 +55,82 @@ const MilkChart = () => {
       chartInstance.current.destroy();
     }
 
-    // Prepare data - group by date and separate AM/PM
-    const milkByDate = {};
-    db.milkRecords.forEach(record => {
-      if (!milkByDate[record.date]) {
-        milkByDate[record.date] = { am: 0, pm: 0 };
-      }
-      milkByDate[record.date].am += Number(record.am || 0);
-      milkByDate[record.date].pm += Number(record.pm || 0);
-    });
-
-    const sortedDates = Object.keys(milkByDate).sort();
-    const amData = sortedDates.map(date => milkByDate[date].am);
-    const pmData = sortedDates.map(date => milkByDate[date].pm);
-    const totalData = sortedDates.map(date => milkByDate[date].am + milkByDate[date].pm);
-
-    const isDark = theme === 'dark';
-    const textColor = isDark ? '#e8f0ea' : '#111c17';
-    const gridColor = isDark ? '#2a3d30' : '#d8e4db';
+    const { labels, amData, pmData, totalData, soldData } = buildMilkSeries(db);
+    const colors = getThemeColors();
 
     const ctx = chartRef.current.getContext('2d');
     chartInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: sortedDates,
+        labels,
         datasets: [
           {
             label: 'AM (Litres)',
             data: amData,
-            borderColor: '#FFA500',
-            backgroundColor: 'rgba(255, 165, 0, 0.1)',
+            borderColor: '#e08a2a',
+            backgroundColor: 'rgba(224, 138, 42, 0.12)',
             fill: false,
-            tension: 0.4,
-            pointRadius: 4,
+            tension: 0.35,
+            pointRadius: 3,
             pointHoverRadius: 6,
             borderWidth: 2
           },
           {
             label: 'PM (Litres)',
             data: pmData,
-            borderColor: '#4169E1',
-            backgroundColor: 'rgba(65, 105, 225, 0.1)',
+            borderColor: '#3a6ac8',
+            backgroundColor: 'rgba(58, 106, 200, 0.12)',
             fill: false,
-            tension: 0.4,
-            pointRadius: 4,
+            tension: 0.35,
+            pointRadius: 3,
             pointHoverRadius: 6,
             borderWidth: 2
           },
           {
-            label: 'Total (Litres)',
+            label: 'Total Produced (Litres)',
             data: totalData,
-            borderColor: '#2a7a3a',
+            borderColor: colors.green,
             backgroundColor: 'rgba(42, 122, 58, 0.15)',
             fill: true,
-            tension: 0.4,
-            pointRadius: 4,
+            tension: 0.35,
+            pointRadius: 3,
             pointHoverRadius: 6,
             borderWidth: 3
+          },
+          {
+            label: 'Sold (Litres)',
+            data: soldData,
+            borderColor: colors.blue,
+            backgroundColor: 'rgba(26, 90, 138, 0.12)',
+            fill: false,
+            borderDash: [5, 4],
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            borderWidth: 2
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        resizeDelay: 200,
+        animation: { duration: 500 },
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: {
             labels: {
-              color: textColor,
-              font: {
-                size: 12
-              },
+              color: colors.text,
+              font: { size: 12 },
               padding: 15,
               usePointStyle: true
             }
           },
           tooltip: {
-            backgroundColor: isDark ? '#1a2a1e' : '#ffffff',
-            titleColor: textColor,
-            bodyColor: textColor,
-            borderColor: gridColor,
+            backgroundColor: colors.surface,
+            titleColor: colors.text,
+            bodyColor: colors.text,
+            borderColor: colors.border,
             borderWidth: 1,
             padding: 12,
             mode: 'index',
@@ -119,37 +140,33 @@ const MilkChart = () => {
         scales: {
           x: {
             ticks: {
-              color: textColor,
+              color: colors.muted,
               font: { size: 11 },
               maxRotation: 0,
               autoSkip: true,
               maxTicksLimit: 6
             },
             grid: {
-              color: gridColor,
+              color: colors.border,
               drawBorder: false
-            }
+            },
+            title: { display: true, text: 'Date', color: colors.muted, font: { size: 11, weight: '500' } }
           },
           y: {
             ticks: {
-              color: textColor,
-              font: {
-                size: 11
-              }
+              color: colors.muted,
+              font: { size: 11 }
             },
             grid: {
-              color: gridColor,
+              color: colors.border,
               drawBorder: false
             },
             beginAtZero: true,
             title: {
               display: true,
               text: 'Litres',
-              color: textColor,
-              font: {
-                size: 12,
-                weight: '500'
-              }
+              color: colors.muted,
+              font: { size: 12, weight: '500' }
             }
           }
         }
@@ -162,6 +179,29 @@ const MilkChart = () => {
       }
     };
   }, [db.milkRecords, theme, chartLoaded]);
+
+  const handleDownload = () => {
+    const { labels, amData, pmData, totalData, soldData } = buildMilkSeries(db);
+    downloadChartPng((ctx, colors) => ({
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'AM (Litres)', data: amData, borderColor: '#e08a2a', tension: 0.3, pointRadius: 3, borderWidth: 2 },
+          { label: 'PM (Litres)', data: pmData, borderColor: '#3a6ac8', tension: 0.3, pointRadius: 3, borderWidth: 2 },
+          { label: 'Total Produced (Litres)', data: totalData, borderColor: colors.green, backgroundColor: 'rgba(42,122,58,0.15)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 3 },
+          { label: 'Sold (Litres)', data: soldData, borderColor: colors.blue, borderDash: [5, 4], tension: 0.3, pointRadius: 3, borderWidth: 2 }
+        ]
+      },
+      options: {
+        plugins: { legend: { labels: { color: colors.text } } },
+        scales: {
+          x: { ticks: { color: colors.text }, grid: { color: colors.border }, title: { display: true, text: 'Date', color: colors.text } },
+          y: { ticks: { color: colors.text }, grid: { color: colors.border }, beginAtZero: true, title: { display: true, text: 'Litres', color: colors.text } }
+        }
+      }
+    }), { filename: 'milk-production-chart.png', title: 'Avexi Farm — Milk Production & Sales' });
+  };
 
   if (!chartLoaded) {
     return (
@@ -188,8 +228,11 @@ const MilkChart = () => {
   }
 
   return (
-    <div className="chart-shell">
-      <canvas ref={chartRef}></canvas>
+    <div className="chart-card">
+      <ChartDownloadButton onClick={handleDownload} />
+      <div className="chart-shell">
+        <canvas ref={chartRef}></canvas>
+      </div>
     </div>
   );
 };

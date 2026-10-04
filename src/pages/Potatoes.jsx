@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import Modal from '../components/Modal';
 import { useApp } from '../context/AppContext';
 import { fd, today, uid } from '../utils/helpers';
+import SelectOrOther from '../components/SelectOrOther';
+
+const CROP_ACTIVITIES = ['Land preparation', 'Planting', 'Weeding', 'Spraying', 'Fertilizer application', 'Hilling / earthing up', 'Harvest'];
 
 const Potatoes = () => {
   const { db, isAdminOrOwner, setDb, sdb } = useApp();
@@ -41,6 +44,14 @@ const Potatoes = () => {
     if (!activityForm.plotId || !activityForm.activity.trim()) return;
 
     const season = activeSeasons.find((item) => item.id === activityForm.plotId);
+
+    // Agricultural sequencing check: a season's field activities (e.g. harvest)
+    // can never be logged on a date earlier than when it was planted.
+    if (activityForm.date < season.plantedDate) {
+      alert(`This activity date (${fd(activityForm.date)}) is before the plot's planting date (${fd(season.plantedDate)}). Please check the date.`);
+      return;
+    }
+
     const cost = Number(activityForm.cost) || 0;
     const activity = {
       id: uid(),
@@ -68,9 +79,23 @@ const Potatoes = () => {
         desc: `${activity.activity} - ${season.plotName}`
       }];
     }
+
+    // A harvest marks the end of that growing season
+    if (activity.activity === 'Harvest') {
+      const seasonIdx = db.plotSeasons.findIndex((s) => s.id === season.id);
+      if (seasonIdx > -1) {
+        updatedDb.plotSeasons = [
+          ...db.plotSeasons.slice(0, seasonIdx),
+          { ...db.plotSeasons[seasonIdx], status: 'harvested', harvestedDate: activityForm.date },
+          ...db.plotSeasons.slice(seasonIdx + 1)
+        ];
+      }
+    }
+
     setDb(updatedDb);
     await sdb();
     setShowActivityForm(false);
+    setActivityForm({ plotId: '', date: today(), activity: '', notes: '', cost: '' });
   };
 
   return (
@@ -157,9 +182,33 @@ const Potatoes = () => {
       <Modal isOpen={showActivityForm} onClose={() => setShowActivityForm(false)} title="Log field activity">
         <form onSubmit={saveActivity}>
           <div className="form-grid">
-            <div className="fg"><label>Plot</label><select required value={activityForm.plotId} onChange={(e) => setActivityForm({ ...activityForm, plotId: e.target.value })}><option value="">Select plot</option>{activeSeasons.map((season) => <option key={season.id} value={season.id}>{season.plotName}</option>)}</select></div>
-            <div className="fg"><label>Date</label><input required type="date" max={today()} value={activityForm.date} onChange={(e) => setActivityForm({ ...activityForm, date: e.target.value })} /></div>
-            <div className="fg"><label>Activity</label><input required value={activityForm.activity} onChange={(e) => setActivityForm({ ...activityForm, activity: e.target.value })} placeholder="e.g. Spraying, weeding" /></div>
+            <div className="fg">
+              <label>Plot *</label>
+              <select required value={activityForm.plotId} onChange={(e) => setActivityForm({ ...activityForm, plotId: e.target.value })}>
+                <option value="">Select plot</option>
+                {activeSeasons.map((season) => <option key={season.id} value={season.id}>{season.plotName}</option>)}
+              </select>
+            </div>
+            <div className="fg">
+              <label>Date *</label>
+              <input
+                required
+                type="date"
+                max={today()}
+                min={activeSeasons.find((s) => s.id === activityForm.plotId)?.plantedDate}
+                value={activityForm.date}
+                onChange={(e) => setActivityForm({ ...activityForm, date: e.target.value })}
+              />
+            </div>
+            <SelectOrOther
+              label="Activity"
+              required
+              name="activity"
+              value={activityForm.activity}
+              onChange={(e) => setActivityForm({ ...activityForm, activity: e.target.value })}
+              options={CROP_ACTIVITIES}
+              otherPlaceholder="Describe the activity"
+            />
             <div className="fg"><label>Cost (KES)</label><input type="number" min="0" value={activityForm.cost} onChange={(e) => setActivityForm({ ...activityForm, cost: e.target.value })} placeholder="0" /></div>
             <div className="fg fg-full"><label>Notes</label><textarea value={activityForm.notes} onChange={(e) => setActivityForm({ ...activityForm, notes: e.target.value })} placeholder="Products used, labour, or observations" /></div>
           </div>

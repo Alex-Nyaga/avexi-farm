@@ -1,5 +1,31 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { getThemeColors } from '../utils/chartTheme';
+import { downloadChartPng } from '../utils/chartExport';
+import ChartDownloadButton from './ChartDownloadButton';
+
+const buildSeries = (db) => {
+  const incomeByDate = {};
+  const expenseByDate = {};
+
+  db.transactions.forEach(tx => {
+    if (!incomeByDate[tx.date]) incomeByDate[tx.date] = 0;
+    if (!expenseByDate[tx.date]) expenseByDate[tx.date] = 0;
+
+    if (tx.type === 'income') {
+      incomeByDate[tx.date] += Number(tx.amount);
+    } else {
+      expenseByDate[tx.date] += Number(tx.amount);
+    }
+  });
+
+  const allDates = [...new Set([...Object.keys(incomeByDate), ...Object.keys(expenseByDate)])].sort();
+  return {
+    labels: allDates,
+    incomeData: allDates.map(date => incomeByDate[date] || 0),
+    expenseData: allDates.map(date => expenseByDate[date] || 0)
+  };
+};
 
 const FinanceChart = () => {
   const { db, theme } = useApp();
@@ -31,40 +57,20 @@ const FinanceChart = () => {
       chartInstance.current.destroy();
     }
 
-    // Prepare data - group transactions by date
-    const incomeByDate = {};
-    const expenseByDate = {};
-    
-    db.transactions.forEach(tx => {
-      if (!incomeByDate[tx.date]) incomeByDate[tx.date] = 0;
-      if (!expenseByDate[tx.date]) expenseByDate[tx.date] = 0;
-      
-      if (tx.type === 'income') {
-        incomeByDate[tx.date] += Number(tx.amount);
-      } else {
-        expenseByDate[tx.date] += Number(tx.amount);
-      }
-    });
-
-    const allDates = [...new Set([...Object.keys(incomeByDate), ...Object.keys(expenseByDate)])].sort();
-    const incomeData = allDates.map(date => incomeByDate[date] || 0);
-    const expenseData = allDates.map(date => expenseByDate[date] || 0);
-
-    const isDark = theme === 'dark';
-    const textColor = isDark ? '#e8f0ea' : '#111c17';
-    const gridColor = isDark ? '#2a3d30' : '#d8e4db';
+    const { labels, incomeData, expenseData } = buildSeries(db);
+    const colors = getThemeColors();
 
     const ctx = chartRef.current.getContext('2d');
     chartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: allDates,
+        labels,
         datasets: [
           {
             label: 'Income',
             data: incomeData,
-            backgroundColor: 'rgba(42, 122, 58, 0.7)',
-            borderColor: '#2a7a3a',
+            backgroundColor: 'rgba(42, 122, 58, 0.75)',
+            borderColor: colors.green,
             borderWidth: 2,
             borderRadius: 5,
             maxBarThickness: 36
@@ -72,8 +78,8 @@ const FinanceChart = () => {
           {
             label: 'Expenses',
             data: expenseData,
-            backgroundColor: 'rgba(176, 48, 32, 0.7)',
-            borderColor: '#b03020',
+            backgroundColor: 'rgba(176, 48, 32, 0.75)',
+            borderColor: colors.red,
             borderWidth: 2,
             borderRadius: 5,
             maxBarThickness: 36
@@ -83,22 +89,22 @@ const FinanceChart = () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        resizeDelay: 200,
+        animation: { duration: 500 },
         plugins: {
           legend: {
             labels: {
-              color: textColor,
-              font: {
-                size: 12
-              },
+              color: colors.text,
+              font: { size: 12 },
               padding: 15,
               usePointStyle: true
             }
           },
           tooltip: {
-            backgroundColor: isDark ? '#1a2a1e' : '#ffffff',
-            titleColor: textColor,
-            bodyColor: textColor,
-            borderColor: gridColor,
+            backgroundColor: colors.surface,
+            titleColor: colors.text,
+            bodyColor: colors.text,
+            borderColor: colors.border,
             borderWidth: 1,
             padding: 12,
             mode: 'index',
@@ -113,32 +119,32 @@ const FinanceChart = () => {
         scales: {
           x: {
             ticks: {
-              color: textColor,
+              color: colors.muted,
               font: { size: 11 },
               maxRotation: 0,
               autoSkip: true,
               maxTicksLimit: 6
             },
             grid: {
-              color: gridColor,
+              color: colors.border,
               drawBorder: false
-            }
+            },
+            title: { display: true, text: 'Date', color: colors.muted, font: { size: 11, weight: '500' } }
           },
           y: {
             ticks: {
-              color: textColor,
-              font: {
-                size: 11
-              },
+              color: colors.muted,
+              font: { size: 11 },
               callback: function(value) {
                 return 'KES ' + value.toLocaleString();
               }
             },
             grid: {
-              color: gridColor,
+              color: colors.border,
               drawBorder: false
             },
-            beginAtZero: true
+            beginAtZero: true,
+            title: { display: true, text: 'Amount (KES)', color: colors.muted, font: { size: 12, weight: '500' } }
           }
         }
       }
@@ -150,6 +156,27 @@ const FinanceChart = () => {
       }
     };
   }, [db.transactions, theme, chartLoaded]);
+
+  const handleDownload = () => {
+    const { labels, incomeData, expenseData } = buildSeries(db);
+    downloadChartPng((ctx, colors) => ({
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Income', data: incomeData, backgroundColor: 'rgba(42,122,58,0.75)', borderColor: colors.green, borderWidth: 2, borderRadius: 5 },
+          { label: 'Expenses', data: expenseData, backgroundColor: 'rgba(176,48,32,0.75)', borderColor: colors.red, borderWidth: 2, borderRadius: 5 }
+        ]
+      },
+      options: {
+        plugins: { legend: { labels: { color: colors.text } } },
+        scales: {
+          x: { ticks: { color: colors.text }, grid: { color: colors.border }, title: { display: true, text: 'Date', color: colors.text } },
+          y: { ticks: { color: colors.text }, grid: { color: colors.border }, beginAtZero: true, title: { display: true, text: 'Amount (KES)', color: colors.text } }
+        }
+      }
+    }), { filename: 'income-expenses-chart.png', title: 'Avexi Farm — Income vs Expenses' });
+  };
 
   if (!chartLoaded) {
     return (
@@ -176,8 +203,11 @@ const FinanceChart = () => {
   }
 
   return (
-    <div className="chart-shell">
-      <canvas ref={chartRef}></canvas>
+    <div className="chart-card">
+      <ChartDownloadButton onClick={handleDownload} />
+      <div className="chart-shell">
+        <canvas ref={chartRef}></canvas>
+      </div>
     </div>
   );
 };

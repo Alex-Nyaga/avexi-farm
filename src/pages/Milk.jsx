@@ -53,6 +53,8 @@ const Milk = () => {
                   <th>AM (L)</th>
                   <th>PM (L)</th>
                   <th>Total (L)</th>
+                  <th>Sold (L)</th>
+                  <th>Buyer</th>
                   <th></th>
                 </tr>
               </thead>
@@ -64,6 +66,8 @@ const Milk = () => {
                     <td>{record.am || 0}</td>
                     <td>{record.pm || 0}</td>
                     <td><strong>{(Number(record.am || 0) + Number(record.pm || 0)).toFixed(1)}</strong></td>
+                    <td>{record.soldLitres ? Number(record.soldLitres).toFixed(1) : '—'}</td>
+                    <td>{record.buyer || '—'}</td>
                     <td>
                       {(isAdminOrOwner() || (isStaff() && record.canEdit)) && (
                         <button className="btn btn-outline btn-xs" onClick={() => handleEditRecord(record.id)}>Edit</button>

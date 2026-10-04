@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import Auth from './components/Auth';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
-import BottomNav from './components/BottomNav';
+import MobileNavDrawer from './components/MobileNavDrawer';
 import PwaBanner from './components/PwaBanner';
 import Dashboard from './pages/Dashboard';
 import Cows from './pages/Cows';
@@ -20,10 +20,16 @@ import './index.css';
 
 const AppContent = () => {
   const { currentUser, currentSection, checkSession } = useApp();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     checkSession();
   }, [checkSession]);
+
+  // Close the mobile drawer whenever the user navigates to a new section
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [currentSection]);
 
   if (!currentUser) {
     return <Auth />;
@@ -60,14 +66,14 @@ const AppContent = () => {
 
   return (
     <div className="app">
-      <Header />
+      <Header onMenuClick={() => setMobileNavOpen(true)} />
       <div className="app-body">
         <Sidebar />
         <main>
           {renderPage()}
         </main>
       </div>
-      <BottomNav />
+      <MobileNavDrawer open={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
       <PwaBanner />
     </div>
   );

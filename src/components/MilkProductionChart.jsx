@@ -1,5 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { getThemeColors } from '../utils/chartTheme';
+import { downloadChartPng } from '../utils/chartExport';
+import ChartDownloadButton from './ChartDownloadButton';
+
+const DOUGHNUT_PALETTE = ['#3a7abf', '#2a7a3a', '#bf8a3a', '#8a3abf', '#5aaf3a', '#b03020', '#4a8abf', '#d4960a'];
+
+const buildCowSeries = (db) => {
+  const milkByCow = {};
+  db.milkRecords.forEach(record => {
+    if (!milkByCow[record.cowTag]) {
+      milkByCow[record.cowTag] = 0;
+    }
+    milkByCow[record.cowTag] += Number(record.am || 0) + Number(record.pm || 0);
+  });
+  const cowTags = Object.keys(milkByCow);
+  return { cowTags, milkData: cowTags.map(tag => milkByCow[tag]) };
+};
 
 const MilkProductionChart = () => {
   const { db, theme } = useApp();
@@ -31,20 +48,8 @@ const MilkProductionChart = () => {
       chartInstance.current.destroy();
     }
 
-    // Prepare data - milk by cow
-    const milkByCow = {};
-    db.milkRecords.forEach(record => {
-      if (!milkByCow[record.cowTag]) {
-        milkByCow[record.cowTag] = 0;
-      }
-      milkByCow[record.cowTag] += Number(record.am || 0) + Number(record.pm || 0);
-    });
-
-    const cowTags = Object.keys(milkByCow);
-    const milkData = cowTags.map(tag => milkByCow[tag]);
-
-    const isDark = theme === 'dark';
-    const textColor = isDark ? '#e8f0ea' : '#111c17';
+    const { cowTags, milkData } = buildCowSeries(db);
+    const colors = getThemeColors();
     const ctx = chartRef.current.getContext('2d');
     chartInstance.current = new Chart(ctx, {
       type: 'doughnut',
@@ -52,35 +57,32 @@ const MilkProductionChart = () => {
         labels: cowTags,
         datasets: [{
           data: milkData,
-          backgroundColor: [
-            '#3a7abf',
-            '#2a7a3a',
-            '#bf8a3a',
-            '#8a3abf',
-            '#5aaf3a',
-            '#b03020',
-            '#4a8abf',
-            '#d4960a'
-          ],
+          backgroundColor: DOUGHNUT_PALETTE,
           borderWidth: 2,
-          borderColor: isDark ? '#162019' : '#ffffff'
+          borderColor: colors.surface,
+          hoverOffset: 6
         }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
+        resizeDelay: 200,
+        animation: { duration: 500 },
         plugins: {
           legend: {
             position: window.innerWidth < 620 ? 'bottom' : 'right',
             labels: {
-              color: textColor,
+              color: colors.text,
               padding: 15,
-              font: {
-                size: 11
-              }
+              font: { size: 11 }
             }
           },
           tooltip: {
+            backgroundColor: colors.surface,
+            titleColor: colors.text,
+            bodyColor: colors.text,
+            borderColor: colors.border,
+            borderWidth: 1,
             callbacks: {
               label: function(context) {
                 const label = context.label || '';
@@ -101,6 +103,22 @@ const MilkProductionChart = () => {
       }
     };
   }, [db.milkRecords, theme, chartLoaded]);
+
+  const handleDownload = () => {
+    const { cowTags, milkData } = buildCowSeries(db);
+    downloadChartPng((ctx, colors) => ({
+      type: 'doughnut',
+      data: {
+        labels: cowTags,
+        datasets: [{ data: milkData, backgroundColor: DOUGHNUT_PALETTE, borderWidth: 2, borderColor: colors.surface }]
+      },
+      options: {
+        plugins: {
+          legend: { position: 'right', labels: { color: colors.text } }
+        }
+      }
+    }), { filename: 'milk-by-cow-chart.png', title: 'Avexi Farm — Milk Production by Cow' });
+  };
 
   if (!chartLoaded) {
     return (
@@ -126,8 +144,11 @@ const MilkProductionChart = () => {
   }
 
   return (
-    <div className="chart-shell chart-shell--doughnut">
-      <canvas ref={chartRef}></canvas>
+    <div className="chart-card">
+      <ChartDownloadButton onClick={handleDownload} />
+      <div className="chart-shell chart-shell--doughnut">
+        <canvas ref={chartRef}></canvas>
+      </div>
     </div>
   );
 };

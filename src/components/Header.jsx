@@ -1,7 +1,7 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
 
-const Header = () => {
+const Header = ({ onMenuClick }) => {
   const { syncStatus, toggleTheme, doLogout, notifications } = useApp();
   const [showNotifPanel, setShowNotifPanel] = React.useState(false);
 
@@ -17,9 +17,14 @@ const Header = () => {
 
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
+  const syncLabel = syncStatus === 'online' ? 'Cloud' : syncStatus === 'offline' ? 'Local' : 'Syncing';
+
   return (
     <>
       <header>
+        <button className="hamburger-btn" onClick={onMenuClick} type="button" aria-label="Open menu">
+          <span /><span /><span />
+        </button>
         <div className="hdr-logo">
           <img className="hdr-logo-image" src="/avexi-wordmark.svg" alt="Avexi Farm" />
         </div>
@@ -28,8 +33,9 @@ const Header = () => {
           <div style={{ fontWeight: '600', fontSize: '.78rem' }}>Avelyne Wambui&apos;s Farm</div>
           <div>Nyandarua, Kenya</div>
         </div>
-        <span id="sync-indicator" className="status-label">
-          {syncStatus === 'online' ? 'Cloud' : syncStatus === 'offline' ? 'Local' : 'Syncing'}
+        <span id="sync-indicator" className="status-label" title={`Data status: ${syncLabel}`}>
+          <span className={`sync-dot sync-dot--${syncStatus}`} />
+          {syncLabel}
         </span>
         <button className="text-btn" id="notif-btn" onClick={() => setShowNotifPanel(!showNotifPanel)} type="button">
           Notifications {notifications.length > 0 && <span className="badge bg-red">{notifications.length}</span>}

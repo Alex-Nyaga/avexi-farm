@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 
   try {
     const filter = action === 'login' ? `username=ilike.${encodeURIComponent(username.trim())}` : `id=eq.${encodeURIComponent(userId)}`;
-    const response = await fetch(`${SUPA_URL}/rest/v1/app_users?select=id,username,full_name,role,blocked,pw_hash&${filter}&limit=1`, {
+    const response = await fetch(`${SUPA_URL}/rest/v1/app_users?select=*&${filter}&limit=1`, {
       headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
     });
     if (!response.ok) return res.status(502).json({ error: 'Authentication service unavailable' });
@@ -28,7 +28,9 @@ export default async function handler(req, res) {
     if (action === 'login' && (!user.pw_hash || !(await bcrypt.compare(password, user.pw_hash)))) {
       return res.status(401).json({ status: 'wrong' });
     }
-    const token = issueToken({ id: user.id, username: user.username, role: user.role });
+    // Existing accounts share the original farm record; new accounts get their own farm_id.
+    const farmId = user.farm_id || 'avexi_main';
+    const token = issueToken({ id: user.id, username: user.username, role: user.role, farmId });
     return res.status(200).json({ status: 'ok', id: user.id, username: user.username, full_name: user.full_name, role: user.role, token });
   } catch (error) {
     console.error('auth request failed', error);
