@@ -108,7 +108,7 @@ const Auth = () => {
               {loading ? 'Signing in…' : 'Sign In →'}
             </button>
           </form>
-          {__DEMO_MODE__ && (
+          {import.meta.env.VITE_DEMO_MODE === 'true' && (
             <button type="button" className="btn-auth" style={{ marginTop: '.75rem', background: 'transparent', color: 'var(--green)', border: '1px solid var(--green)' }} onClick={doDemoLogin}>
               View demo (sample data)
             </button>

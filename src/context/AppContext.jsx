@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { buildNotifications } from '../utils/notifications';
 import { playAlarm, unlockAudio } from '../utils/alarm';
 
-const DEMO_MODE = __DEMO_MODE__;
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
 // Sample data shown only in demo mode.
 const buildSampleData = () => {
