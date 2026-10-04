@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '../context/AppContext';
 
 const Header = ({ onMenuClick }) => {
-  const { syncStatus, toggleTheme, doLogout, notifications } = useApp();
+  const { syncStatus, toggleTheme, doLogout, notifications, currentUser } = useApp();
   const [showNotifPanel, setShowNotifPanel] = React.useState(false);
 
   React.useEffect(() => {
@@ -17,7 +17,8 @@ const Header = ({ onMenuClick }) => {
 
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
-  const syncLabel = syncStatus === 'online' ? 'Cloud' : syncStatus === 'offline' ? 'Local' : 'Syncing';
+  const syncLabel = syncStatus === 'online' ? 'Connected' : syncStatus === 'offline' ? 'Saved on this device' : 'Syncing';
+  const userName = currentUser?.name || currentUser?.username || 'My';
 
   return (
     <>
@@ -30,25 +31,29 @@ const Header = ({ onMenuClick }) => {
         </div>
         <div className="hdr-spacer" />
         <div className="hdr-farm">
-          <div style={{ fontWeight: '600', fontSize: '.78rem' }}>Avelyne Wambui&apos;s Farm</div>
+          <div style={{ fontWeight: '600', fontSize: '.78rem' }}>{userName}&apos;s Farm</div>
           <div>Nyandarua, Kenya</div>
         </div>
-        <span id="sync-indicator" className="status-label" title={`Data status: ${syncLabel}`}>
+        <span id="sync-indicator" className="status-label" title={syncLabel} role="status" aria-label={`Data status: ${syncLabel}`}>
           <span className={`sync-dot sync-dot--${syncStatus}`} />
-          {syncLabel}
         </span>
-        <button className="text-btn" id="notif-btn" onClick={() => setShowNotifPanel(!showNotifPanel)} type="button">
-          Notifications {notifications.length > 0 && <span className="badge bg-red">{notifications.length}</span>}
+        <button className="text-btn icon-btn" id="notif-btn" onClick={() => setShowNotifPanel(!showNotifPanel)} type="button" aria-label={`Notifications${notifications.length > 0 ? `, ${notifications.length} unread` : ''}`} title="Notifications">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+          {notifications.length > 0 && <span className="badge bg-red">{notifications.length}</span>}
         </button>
-        <button className="text-btn" onClick={toggleTheme} id="theme-btn" type="button">
-          {isDark ? 'Light mode' : 'Dark mode'}
+        <button className="text-btn icon-btn" onClick={toggleTheme} id="theme-btn" type="button" aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'} title={isDark ? 'Light mode' : 'Dark mode'}>
+          {isDark ? (
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z"/></svg>
+          )}
         </button>
         <button className="text-btn" onClick={doLogout} type="button">Sign out</button>
       </header>
 
       <div className={`notif-panel ${showNotifPanel ? 'open' : ''}`}>
         <div className="notif-header">
-          Notifications <span className="badge bg-red">{notifications.length}</span>
+          <span>Notifications</span><span className="badge bg-red">{notifications.length}</span>
         </div>
         {notifications.length === 0 ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontSize: '.85rem' }}>

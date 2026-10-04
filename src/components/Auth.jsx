@@ -113,11 +113,6 @@ const Auth = () => {
               View demo (sample data)
             </button>
           )}
-          <div className="auth-farm-info">
-            <p>Farm Owner: <strong>Avelyne Wambui</strong></p>
-            <p>Administrator: <strong>Alex Nyaga</strong></p>
-            <p>Location: Nyandarua County, Kenya</p>
-          </div>
         </div>
       </div>
     </div>
