@@ -52,7 +52,7 @@ export const buildNotifications = (db) => {
       notifications.push({
         type: 'alert',
         title: `Deworming overdue: ${a.tag}`,
-        text: `${a.kind} ${a.tag} — deworming was due ${a.daysAgo} day(s) ago!`,
+        text: `${a.kind} ${a.tag}, deworming was due ${a.daysAgo} day(s) ago.`,
         time: nowTs()
       });
     } else {
@@ -73,7 +73,7 @@ export const buildNotifications = (db) => {
       notifications.push({
         type: 'warn',
         title: `Deworming due soon: ${a.tag}`,
-        text: `${a.kind} ${a.tag} — deworming due in ${a.diff} day(s). Prepare medication.`,
+        text: `${a.kind} ${a.tag}, deworming due in ${a.diff} day(s). Prepare medication.`,
         time: nowTs()
       });
     } else {
@@ -82,7 +82,7 @@ export const buildNotifications = (db) => {
       notifications.push({
         type: 'warn',
         title: `Deworming due: ${animals.length} animals together`,
-        text: `${animals.length} animals are all due for deworming in ${minDays} day(s): ${tags}. A great time to deworm the whole group at once!`,
+        text: `${animals.length} animals are all due for deworming in ${minDays} day(s): ${tags}. Deworm the whole group at once.`,
         time: nowTs()
       });
     }
@@ -95,7 +95,7 @@ export const buildNotifications = (db) => {
       notifications.push({
         type: 'alert',
         title: `Vaccination overdue: ${a.tag}`,
-        text: `${a.kind} ${a.tag} vaccination was due ${a.daysAgo} day(s) ago!`,
+        text: `${a.kind} ${a.tag} vaccination was due ${a.daysAgo} day(s) ago.`,
         time: nowTs()
       });
     } else {
@@ -116,7 +116,7 @@ export const buildNotifications = (db) => {
       notifications.push({
         type: 'warn',
         title: `Vaccination due: ${a.tag}`,
-        text: `${a.kind} ${a.tag} — due in ${a.diff} day(s).`,
+        text: `${a.kind} ${a.tag}, due in ${a.diff} day(s).`,
         time: nowTs()
       });
     } else {

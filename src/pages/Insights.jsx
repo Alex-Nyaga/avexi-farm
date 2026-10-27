@@ -23,11 +23,11 @@ const Insights = () => {
       </div>
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">Active Alerts ({notifications.length})</div>
+          <div className="card-title">Active alerts ({notifications.length})</div>
         </div>
         {notifications.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">All Clear</div>
+            <div className="empty-icon">All clear</div>
             No alerts at this time.
           </div>
         ) : (
@@ -45,23 +45,23 @@ const Insights = () => {
       </div>
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">Farm Overview</div>
+          <div className="card-title">Farm overview</div>
         </div>
         <div className="stat-grid">
           <div className="stat">
-            <div className="stat-label">Total Cows</div>
+            <div className="stat-label">Total cows</div>
             <div className="stat-val">{db.cows.length}</div>
           </div>
           <div className="stat">
-            <div className="stat-label">Total Sheep</div>
+            <div className="stat-label">Total sheep</div>
             <div className="stat-val">{db.sheep.length}</div>
           </div>
           <div className="stat">
-            <div className="stat-label">Active Plots</div>
+            <div className="stat-label">Active plots</div>
             <div className="stat-val">{db.plotSeasons.filter(s => s.status === 'active').length}</div>
           </div>
           <div className="stat">
-            <div className="stat-label">Staff Members</div>
+            <div className="stat-label">Staff members</div>
             <div className="stat-val">{db.staff.filter(s => s.status === 'active').length}</div>
           </div>
         </div>

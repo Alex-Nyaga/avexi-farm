@@ -190,7 +190,7 @@ const MonthlyFinanceChart = () => {
           y: { ticks: { color: colors.text }, grid: { color: colors.border }, beginAtZero: true, title: { display: true, text: 'Amount (KES)', color: colors.text } }
         }
       }
-    }), { filename: 'monthly-finance-trend.png', title: 'Avexi Farm — Monthly Income, Expenses & Profit' });
+    }), { filename: 'monthly-finance-trend.png', title: 'Avexi Farm: monthly income, expenses and profit' });
   };
 
   if (!chartLoaded) {

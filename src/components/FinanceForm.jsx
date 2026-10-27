@@ -125,7 +125,7 @@ const FinanceForm = ({ isOpen, onClose, transactionId, transactionType }) => {
         </div>
 
         <div className="modal-actions">
-          <button type="submit" className="btn btn-primary">Save Transaction</button>
+          <button type="submit" className="btn btn-primary">Save transaction</button>
           <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
           {transactionId && <button type="button" className="btn btn-danger btn-sm" onClick={handleDelete}>Delete</button>}
         </div>

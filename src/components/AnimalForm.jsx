@@ -128,7 +128,7 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
             amount: purchasePrice,
             source: type,
             category: isCow ? 'Cow purchase' : 'Sheep purchase',
-            desc: `Bought ${type} — ${formData.tag}`
+            desc: `Bought ${type}, ${formData.tag}`
           }
         ];
       }
@@ -204,10 +204,10 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
           </div>
         </div>
 
-        <div className="section-divider">Health Schedule</div>
+        <div className="section-divider">Health schedule</div>
         <div className="form-grid">
           <div className="fg">
-            <label>Last Deworming Date</label>
+            <label>Last deworming date</label>
             <input type="date" name="lastDeworming" value={formData.lastDeworming || ''} onChange={handleChange} min={formData.dob || undefined} max={today()} />
           </div>
           <div className="fg">
@@ -216,11 +216,11 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
           </div>
           <SelectOrOther label="Deworming Drug Used" name="dewormingDrug" value={formData.dewormingDrug} onChange={handleChange} options={drugs} />
           <div className="fg">
-            <label>Last Vaccination Date</label>
+            <label>Last vaccination date</label>
             <input type="date" name="lastVaccination" value={formData.lastVaccination || ''} onChange={handleChange} min={formData.dob || undefined} max={today()} />
           </div>
           <div className="fg">
-            <label>Next Vaccination Date</label>
+            <label>Next vaccination date</label>
             <input type="date" name="nextVaccination" value={formData.nextVaccination || ''} onChange={handleChange} min={formData.lastVaccination || undefined} />
           </div>
           <SelectOrOther label="Vaccination Type" name="vaccinationType" value={formData.vaccinationType} onChange={handleChange} options={vaccines} />
@@ -235,7 +235,7 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
                 <input type="number" name="avgMilkPerDay" value={formData.avgMilkPerDay || ''} onChange={handleChange} placeholder="litres" />
               </div>
               <div className="fg">
-                <label>Lactation Status</label>
+                <label>Lactation status</label>
                 <select name="lactation" value={formData.lactation || 'Milking'} onChange={handleChange}>
                   <option value="Milking">Milking</option>
                   <option value="Dry">Dry</option>
@@ -261,7 +261,7 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
             <input type="number" name="purchasePrice" value={formData.purchasePrice || ''} onChange={handleChange} placeholder="0" />
           </div>
           <div className="fg">
-            <label>Purchase Date</label>
+            <label>Purchase date</label>
             <input type="date" name="purchaseDate" value={formData.purchaseDate || today()} onChange={handleChange} max={today()} />
           </div>
         </div>

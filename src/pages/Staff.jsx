@@ -21,7 +21,7 @@ const Staff = () => {
   return (
     <div>
       <div className="page-hdr">
-        <div className="page-title">Farm Staff</div>
+        <div className="page-title">Farm staff</div>
         <div className="page-actions">
           {isAdminOrOwner() && (
             <button className="btn btn-primary btn-sm" onClick={handleAddStaff}>+ Add Staff</button>
@@ -30,7 +30,7 @@ const Staff = () => {
       </div>
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">All Staff ({db.staff.length})</div>
+          <div className="card-title">All staff ({db.staff.length})</div>
         </div>
         {db.staff.length === 0 ? (
           <div className="empty-state">

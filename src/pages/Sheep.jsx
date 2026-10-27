@@ -50,8 +50,8 @@ const Sheep = () => {
     <div className="theme-sheep">
       <div className="section-banner" style={{ background: 'var(--sheep-l)' }}>
         <div>
-          <h3 style={{ color: 'var(--sheep-h)' }}>Sheep Management</h3>
-          <p style={{ color: 'var(--sheep-b)' }}>Full livestock records — species, health, breeding, events</p>
+          <h3 style={{ color: 'var(--sheep-h)' }}>Sheep management</h3>
+          <p style={{ color: 'var(--sheep-b)' }}>Full livestock records: species, health, breeding, events</p>
         </div>
       </div>
       <div className="page-hdr">
@@ -60,25 +60,25 @@ const Sheep = () => {
           {isAdminOrOwner() ? (
             <>
               <button className="btn btn-primary btn-sm" onClick={handleAddSheep}>+ Add Sheep</button>
-              <button className="btn btn-outline btn-sm" onClick={handleAddEvent}>+ Log Event</button>
-              <button className="btn btn-sm" style={{ background: '#bf8a3a', color: '#fff' }} onClick={() => handleSellAnimal(null)}>Sell Animal</button>
+              <button className="btn btn-outline btn-sm" onClick={handleAddEvent}>+ Log event</button>
+              <button className="btn btn-sm" style={{ background: '#bf8a3a', color: '#fff' }} onClick={() => handleSellAnimal(null)}>Sell animal</button>
             </>
           ) : (
-            <span className="badge bg-amber">View only — staff</span>
+            <span className="badge bg-amber">View only (staff)</span>
           )}
         </div>
       </div>
       <div className="tabs">
-        <div className={`tab ${sheepTab === 'list' ? 'active' : ''}`} onClick={() => setSheepTab('list')}>All Sheep</div>
-        <div className={`tab ${sheepTab === 'events' ? 'active' : ''}`} onClick={() => setSheepTab('events')}>Events Log</div>
-        <div className={`tab ${sheepTab === 'health' ? 'active' : ''}`} onClick={() => setSheepTab('health')}>Health Schedule</div>
+        <div className={`tab ${sheepTab === 'list' ? 'active' : ''}`} onClick={() => setSheepTab('list')}>All sheep</div>
+        <div className={`tab ${sheepTab === 'events' ? 'active' : ''}`} onClick={() => setSheepTab('events')}>Events log</div>
+        <div className={`tab ${sheepTab === 'health' ? 'active' : ''}`} onClick={() => setSheepTab('health')}>Health schedule</div>
       </div>
 
       {sheepTab === 'list' && (
         <>
           <div className="card">
             <div className="card-hdr">
-              <div className="card-title">Live Sheep ({liveSheep.length})</div>
+              <div className="card-title">Live sheep ({liveSheep.length})</div>
             </div>
             {liveSheep.length === 0 ? (
               <div className="empty-state">
@@ -97,7 +97,7 @@ const Sheep = () => {
                       <th>Age</th>
                       <th>Weight</th>
                       <th>Deworming</th>
-                      <th>Next Vacc</th>
+                      <th>Next vacc</th>
                       <th>Status</th>
                       <th></th>
                     </tr>
@@ -173,7 +173,7 @@ const Sheep = () => {
                         <td><span className={`badge ${sheep.status === 'sold' ? 'bg-amber' : 'bg-red'}`}>{sheep.status}</span></td>
                         <td>
                           {isAdminOrOwner() ? (
-                            <button className="btn btn-outline btn-xs" onClick={() => handleEditSheep(sheep.id)}>Edit Info</button>
+                            <button className="btn btn-outline btn-xs" onClick={() => handleEditSheep(sheep.id)}>Edit info</button>
                           ) : '—'}
                         </td>
                       </tr>
@@ -190,7 +190,7 @@ const Sheep = () => {
         <div className="card">
           <div className="page-hdr" style={{ marginBottom: '.75rem' }}>
             <div></div>
-            {isAdminOrOwner() && <button className="btn btn-primary btn-sm" onClick={handleAddEvent}>+ Log Event</button>}
+            {isAdminOrOwner() && <button className="btn btn-primary btn-sm" onClick={handleAddEvent}>+ Log event</button>}
           </div>
           <div className="tbl-wrap">
             <table>
@@ -244,11 +244,11 @@ const Sheep = () => {
                   <tr>
                     <th>Tag</th>
                     <th>Breed</th>
-                    <th>Last Dewormed</th>
-                    <th>Next Due</th>
-                    <th>Days Away</th>
-                    <th>Last Vaccinated</th>
-                    <th>Next Vaccination</th>
+                    <th>Last dewormed</th>
+                    <th>Next due</th>
+                    <th>Days away</th>
+                    <th>Last vaccinated</th>
+                    <th>Next vaccination</th>
                     <th>Status</th>
                   </tr>
                 </thead>

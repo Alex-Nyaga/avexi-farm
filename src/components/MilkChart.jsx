@@ -200,7 +200,7 @@ const MilkChart = () => {
           y: { ticks: { color: colors.text }, grid: { color: colors.border }, beginAtZero: true, title: { display: true, text: 'Litres', color: colors.text } }
         }
       }
-    }), { filename: 'milk-production-chart.png', title: 'Avexi Farm — Milk Production & Sales' });
+    }), { filename: 'milk-production-chart.png', title: 'Avexi Farm: milk production and sales' });
   };
 
   if (!chartLoaded) {

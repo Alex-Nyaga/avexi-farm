@@ -117,7 +117,7 @@ const MilkProductionChart = () => {
           legend: { position: 'right', labels: { color: colors.text } }
         }
       }
-    }), { filename: 'milk-by-cow-chart.png', title: 'Avexi Farm — Milk Production by Cow' });
+    }), { filename: 'milk-by-cow-chart.png', title: 'Avexi Farm: milk production by cow' });
   };
 
   if (!chartLoaded) {

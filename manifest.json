@@ -1,7 +1,7 @@
 {
   "name": "Avexi Farm",
   "short_name": "Avexi",
-  "description": "Avexi Farm Management — Livestock, Crops, Finance",
+  "description": "Record milk, animal health, crop activities and farm finances in one place.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

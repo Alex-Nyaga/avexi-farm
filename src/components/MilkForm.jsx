@@ -200,7 +200,7 @@ const MilkForm = ({ isOpen, onClose, recordId }) => {
         </div>
 
         <div className="modal-actions">
-          <button type="submit" className="btn btn-primary">Save Record</button>
+          <button type="submit" className="btn btn-primary">Save record</button>
           <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
           {recordId && isAdminOrOwner() && (
             <button type="button" className="btn btn-danger btn-sm" onClick={handleDelete}>Delete</button>

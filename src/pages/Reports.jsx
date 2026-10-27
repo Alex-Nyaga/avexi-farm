@@ -22,7 +22,7 @@ const Reports = () => {
   const make = (title, subtitle) => new ReportBuilder({ title, subtitle, user });
 
   const livestock = () => {
-    const r = make('Livestock Report', `${db.cows.length + db.sheep.length} animals`);
+    const r = make('Livestock report', `${db.cows.length + db.sheep.length} animals`);
     r.kpis([['Cows', db.cows.length], ['Sheep', db.sheep.length], ['Calves', (db.calves || []).length], ['Vet visits', (db.vetVisits || []).length]]);
     const rows = (a) => a.map((x) => [x.tag, x.breed || x.species || '—', x.sex || '—', x.status || '—', x.weight ? `${x.weight} kg` : '—']);
     r.table(['Tag', 'Breed', 'Sex', 'Status', 'Weight'], rows(db.cows), 'Cows');
@@ -36,7 +36,7 @@ const Reports = () => {
     const total = (x) => Number(x.am || 0) + Number(x.pm || 0);
     const litres = sum(recs, total);
     const sold = sum(recs, (x) => x.soldLitres || x.litresSold || x.sold || 0);
-    const r = make('Milk Production Report', `${recs.length} records`);
+    const r = make('Milk production report', `${recs.length} records`);
     r.kpis([['Total litres', litres.toFixed(1)], ['Sold (L)', sold.toFixed(1)], ['Records', recs.length]]);
     const m = byMonth(recs, total);
     if (m.keys.length) {
@@ -51,7 +51,7 @@ const Reports = () => {
     const tx = db.transactions || [];
     const inc = sum(tx.filter((t) => t.type === 'income'), (t) => t.amount);
     const exp = sum(tx.filter((t) => t.type === 'expense'), (t) => t.amount);
-    const r = make('Financial Report', 'Income & expenses');
+    const r = make('Financial report', 'Income & expenses');
     r.kpis([['Income', ksh(inc)], ['Expenses', ksh(exp)], ['Net', ksh(inc - exp)]]);
     const i = byMonth(tx.filter((t) => t.type === 'income'), (t) => t.amount);
     const e = byMonth(tx.filter((t) => t.type === 'expense'), (t) => t.amount);
@@ -77,7 +77,7 @@ const Reports = () => {
 
   const staffReport = () => {
     const list = db.staff || [];
-    const r = make('Staff Report', `${list.length} members`);
+    const r = make('Staff report', `${list.length} members`);
     r.kpis([['Total', list.length], ['Active', list.filter((s) => s.status !== 'inactive').length], ['Left', list.filter((s) => s.status === 'inactive').length]]);
     r.table(['Name', 'Role', 'Phone', staff ? 'Status' : 'Salary', staff ? 'Started' : 'Status'], list.map((s) => staff
       ? [s.name, s.role || '—', s.phone || '—', s.status || '—', s.startDate ? fd(s.startDate) : '—']
@@ -88,7 +88,7 @@ const Reports = () => {
 
   const crop = () => {
     const seasons = db.plotSeasons || [];
-    const r = make('Crop Report', `${seasons.length} seasons`);
+    const r = make('Crop report', `${seasons.length} seasons`);
     r.kpis([['Seasons', seasons.length], ['Plots', (db.plots || []).length]]);
     r.table(['Plot', 'Variety', 'Planted', 'Status'], seasons.map((s) => [s.plotName || s.plotId, s.variety || '—', s.plantedDate ? fd(s.plantedDate) : '—', s.status || '—']), 'Seasons');
     r.signatures();
@@ -96,7 +96,7 @@ const Reports = () => {
   };
 
   const fullFarm = () => {
-    const r = make('Full Farm Report', 'Complete farm register and activity history');
+    const r = make('Full farm report', 'Complete farm register and activity history');
     const cows = db.cows || [];
     const calves = db.calves || [];
     const sheep = db.sheep || [];
@@ -194,12 +194,12 @@ const Reports = () => {
   };
 
   const items = [
-    ['Full Farm Report', 'All livestock, crops, milk, health, staff and finances', fullFarm],
-    ['Livestock Report', 'Cows and sheep overview', livestock],
-    ['Milk Production Report', 'Monthly graph, records and sales', milk],
-    ['Crop Report', 'Plots and seasons', crop],
-    !staff && ['Financial Report', 'Income, expenses, graphs', finance],
-    ['Staff Report', 'Team members', staffReport]
+    ['Full farm report', 'All livestock, crops, milk, health, staff and finances', fullFarm],
+    ['Livestock report', 'Cows and sheep overview', livestock],
+    ['Milk production report', 'Monthly graph, records and sales', milk],
+    ['Crop report', 'Plots and seasons', crop],
+    !staff && ['Financial report', 'Income, expenses, graphs', finance],
+    ['Staff report', 'Team members', staffReport]
   ].filter(Boolean);
 
   return (
@@ -208,14 +208,14 @@ const Reports = () => {
         <div className="page-title">Reports</div>
       </div>
       <div className="card">
-        <div className="card-title">Available Reports</div>
+        <div className="card-title">Available reports</div>
         <div className="card-sub" style={{ marginBottom: '1rem' }}>
           Each PDF carries the download date and time, your name, and a sign-off block.
         </div>
         <div style={{ display: 'grid', gap: '.75rem' }}>
           {items.map(([t, s, fn]) => (
             <button key={t} type="button" className="btn btn-outline report-download" onClick={fn}>
-              <span><strong>{t}</strong><br /><small>{s}</small></span>
+              <span className="report-meta"><span className="report-name">{t}</span><span className="report-desc">{s}</span></span>
               <span>Download PDF</span>
             </button>
           ))}

@@ -182,7 +182,7 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
         amount: Number(formData.salePrice),
         source: type,
         category: 'Animal sale',
-        desc: `Sold ${type} — ${list.find(a => a.id === formData.animalId)?.tag || 'Unknown'}`
+        desc: `Sold ${type}, ${list.find(a => a.id === formData.animalId)?.tag || 'Unknown'}`
       };
       updatedDb.transactions = [...db.transactions, transaction];
       newEvent.transactionId = transaction.id;
@@ -325,7 +325,7 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
           <div className="form-grid mt1">
             <div className="fg">
               <label>Sale price (KES) *</label>
-              <input type="number" min="0" step="any" name="salePrice" value={formData.salePrice || ''} onChange={handleChange} placeholder="Optional — enter if known" />
+              <input type="number" min="0" step="any" name="salePrice" value={formData.salePrice || ''} onChange={handleChange} placeholder="Optional: enter if known" />
             </div>
             <div className="fg">
               <label>Buyer / market</label>
@@ -387,7 +387,7 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
           <div className="fg fg-full mt1">
             <label>Update last deworming date on animal?</label>
             <select name="updateDeworming" value={formData.updateDeworming || 'yes'} onChange={handleChange}>
-              <option value="yes">Yes — update</option>
+              <option value="yes">Yes, update</option>
               <option value="no">No</option>
             </select>
           </div>
@@ -418,7 +418,7 @@ const EventForm = ({ isOpen, onClose, type, preselectedAnimalId, calvesOnly = fa
         </div>
 
         <div className="modal-actions">
-          <button type="submit" className="btn btn-primary">Save Event</button>
+          <button type="submit" className="btn btn-primary">Save event</button>
           <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
         </div>
       </form>

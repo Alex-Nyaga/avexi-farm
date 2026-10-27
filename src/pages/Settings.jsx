@@ -60,10 +60,10 @@ const Settings = () => {
       </div>
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">Data Sync</div>
+          <div className="card-title">Data sync</div>
         </div>
         <div className="fg" style={{ marginBottom: '1rem' }}>
-          <label>Sync Status</label>
+          <label>Sync status</label>
           <div style={{ 
             padding: '.5rem 1rem', 
             borderRadius: '8px', 
@@ -106,10 +106,10 @@ const Settings = () => {
       </div>
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">Farm Information</div>
+          <div className="card-title">Farm information</div>
         </div>
         <div className="fg" style={{ marginBottom: '1rem' }}>
-          <label>Farm Owner</label>
+          <label>Farm owner</label>
           <div style={{ padding: '.5rem 0' }}>Avelyne Wambui</div>
         </div>
         <div className="fg" style={{ marginBottom: '1rem' }}>

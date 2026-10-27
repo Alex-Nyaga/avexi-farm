@@ -70,10 +70,10 @@ const Vet = () => {
   return (
     <div>
       <div className="page-hdr">
-        <div className="page-title">Veterinary Records</div>
+        <div className="page-title">Veterinary records</div>
         <div className="page-actions">
           {isAdminOrOwner() && (
-            <button className="btn btn-primary btn-sm" onClick={handleAddVetVisit}>+ Add Vet Visit</button>
+            <button className="btn btn-primary btn-sm" onClick={handleAddVetVisit}>+ Add vet visit</button>
           )}
         </div>
       </div>
@@ -81,13 +81,13 @@ const Vet = () => {
       {showVetForm && (
         <div className="card">
           <div className="card-hdr">
-            <div className="card-title">Add Vet Visit</div>
+            <div className="card-title">Add vet visit</div>
             <button className="btn btn-outline btn-xs" onClick={() => setShowVetForm(false)}>Close</button>
           </div>
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="fg">
-                <label>Animal Tag</label>
+                <label>Animal tag</label>
                 <input name="animalTag" value={formData.animalTag} onChange={handleChange} placeholder="e.g. C-001" />
               </div>
               <div className="fg">
@@ -112,7 +112,7 @@ const Vet = () => {
               <textarea name="notes" value={formData.notes} onChange={handleChange} placeholder="Additional details..." />
             </div>
             <div className="modal-actions">
-              <button type="submit" className="btn btn-primary">Save Visit</button>
+              <button type="submit" className="btn btn-primary">Save visit</button>
               <button type="button" className="btn btn-outline" onClick={() => setShowVetForm(false)}>Cancel</button>
             </div>
           </form>
@@ -121,7 +121,7 @@ const Vet = () => {
 
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">Vet Visits ({db.vetVisits.length})</div>
+          <div className="card-title">Vet visits ({db.vetVisits.length})</div>
         </div>
         {db.vetVisits.length === 0 ? (
           <div className="empty-state">

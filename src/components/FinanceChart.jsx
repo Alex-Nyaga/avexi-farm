@@ -175,7 +175,7 @@ const FinanceChart = () => {
           y: { ticks: { color: colors.text }, grid: { color: colors.border }, beginAtZero: true, title: { display: true, text: 'Amount (KES)', color: colors.text } }
         }
       }
-    }), { filename: 'income-expenses-chart.png', title: 'Avexi Farm — Income vs Expenses' });
+    }), { filename: 'income-expenses-chart.png', title: 'Avexi Farm: income vs expenses' });
   };
 
   if (!chartLoaded) {

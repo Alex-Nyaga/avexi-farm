@@ -90,7 +90,7 @@ const Enterprises = () => {
   return (
     <div>
       <div className="page-hdr">
-        <div className="page-title">My Farm</div>
+        <div className="page-title">My farm</div>
         <div className="page-actions">
           <button className="btn btn-primary btn-sm" onClick={() => setShowAdd(true)}>+ Add enterprise</button>
         </div>
@@ -125,7 +125,7 @@ const Enterprises = () => {
           <>
             <p>
               <strong>{target.name}</strong> still has {usage.records} record{usage.records === 1 ? '' : 's'}.
-              Delete them one by one first — an enterprise can only be removed once it is empty.
+              Delete them one by one first. An enterprise can only be removed once it is empty.
             </p>
             <p className="text-muted">If you just don’t want to see it any more, archive it instead. Nothing is lost.</p>
             <div className="modal-actions">

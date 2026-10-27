@@ -16,9 +16,9 @@ export const CATEGORIES = [
     { id: 'horses', name: 'Horses', short: 'Horses' }
   ]},
   { id: 'poultry', name: 'Poultry', kind: ANIMAL, items: [
-    { id: 'layers', name: 'Chicken — layers (eggs)', short: 'Layers' },
-    { id: 'broilers', name: 'Chicken — broilers (meat)', short: 'Broilers' },
-    { id: 'kienyeji', name: 'Chicken — indigenous (kienyeji)', short: 'Kienyeji Chicken' },
+    { id: 'layers', name: 'Chicken, layers (eggs)', short: 'Layers' },
+    { id: 'broilers', name: 'Chicken, broilers (meat)', short: 'Broilers' },
+    { id: 'kienyeji', name: 'Chicken, indigenous (kienyeji)', short: 'Kienyeji Chicken' },
     { id: 'ducks', name: 'Ducks', short: 'Ducks' },
     { id: 'turkeys', name: 'Turkeys', short: 'Turkeys' },
     { id: 'geese', name: 'Geese', short: 'Geese' },

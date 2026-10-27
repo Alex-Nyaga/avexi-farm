@@ -327,7 +327,7 @@ export const AppProvider = ({ children }) => {
           : 'Too many failed attempts. Locked for 15 minutes.');
       }
       if (result.status === 'blocked') {
-        throw new Error('Your access has been restricted. Contact admin: Alex Nyaga — 0757934764.');
+        throw new Error('Your access has been restricted. Contact the farm administrator: Alex Nyaga, 0757934764.');
       }
       if (result.status !== 'ok') {
         throw new Error('Login failed. Try again.');

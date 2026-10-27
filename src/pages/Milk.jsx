@@ -24,19 +24,19 @@ const Milk = () => {
     <div className="theme-cow">
       <div className="section-banner" style={{ background: 'var(--cow-l)' }}>
         <div>
-          <h3 style={{ color: 'var(--cow-h)' }}>Milk Records</h3>
+          <h3 style={{ color: 'var(--cow-h)' }}>Milk records</h3>
           <p style={{ color: 'var(--cow-b)' }}>Track daily milk production from your cows</p>
         </div>
       </div>
       <div className="page-hdr">
-        <div className="page-title" style={{ color: 'var(--cow-h)' }}>Milk Records</div>
+        <div className="page-title" style={{ color: 'var(--cow-h)' }}>Milk records</div>
         <div className="page-actions">
           <button className="btn btn-primary btn-sm" onClick={handleAddRecord}>+ Add Milk Record</button>
         </div>
       </div>
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">All Records ({db.milkRecords.length})</div>
+          <div className="card-title">All records ({db.milkRecords.length})</div>
         </div>
         {db.milkRecords.length === 0 ? (
           <div className="empty-state">
@@ -84,7 +84,7 @@ const Milk = () => {
       {db.milkRecords.length > 0 && (
         <div className="card">
           <div className="card-hdr">
-            <div className="card-title">Milk Production Chart</div>
+            <div className="card-title">Milk production</div>
           </div>
           <MilkChart />
         </div>

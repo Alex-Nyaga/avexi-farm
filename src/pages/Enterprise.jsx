@@ -78,10 +78,10 @@ const Enterprise = ({ enterpriseId }) => {
       return `This cannot be dated before ${kind === 'crop' ? 'planting' : 'stocking'} (${fd(starts[0])}).`;
     }
     if (kind === 'animal' && !START.animal.includes(form.activity) && !starts.length) {
-      return `Record animal stocking or birth first — ${form.activity.toLowerCase()} needs an earlier start date.`;
+      return `Record animal stocking or birth first. ${form.activity.toLowerCase()} needs an earlier start date.`;
     }
     if (kind === 'crop' && form.activity === 'Harvest' && !starts.length) {
-      return 'Record planting first — harvest needs an earlier planting date.';
+      return 'Record planting first. Harvest needs an earlier planting date.';
     }
     if (kind === 'crop' && form.activity === 'Sale') {
       if (form.money && Number(form.money) <= 0) return 'Sale proceeds must be greater than zero when provided.';
@@ -134,7 +134,7 @@ const Enterprise = ({ enterpriseId }) => {
         transactions = [...transactions, {
           id: txId, type: income ? 'income' : 'expense', date: rec.date, amount: rec.money,
           category: income ? (kind === 'crop' ? 'Crop Sale' : 'Animal Sale') : (kind === 'crop' ? 'Crop inputs' : 'Animal care'), source: enterprise.name, enterpriseId,
-          desc: `${rec.activity} — ${enterprise.name}${rec.details?.buyer ? ` (${rec.details.buyer})` : rec.party ? ` (${rec.party})` : ''}`
+          desc: `${rec.activity}, ${enterprise.name}${rec.details?.buyer ? ` (${rec.details.buyer})` : rec.party ? ` (${rec.party})` : ''}`
         }];
       } else {
         delete rec.transactionId;
@@ -204,7 +204,7 @@ const Enterprise = ({ enterpriseId }) => {
         )}
       </div>
 
-      <Modal isOpen={open} onClose={() => setOpen(false)} title={`${editId ? 'Edit' : 'Add'} record — ${enterprise.name}`}>
+      <Modal isOpen={open} onClose={() => setOpen(false)} title={`${editId ? 'Edit' : 'Add'} record: ${enterprise.name}`}>
         <form onSubmit={submit}>
           {error && <div className="auth-err" style={{ display: 'block', marginBottom: '.75rem' }}>{error}</div>}
           <div className="form-grid">
@@ -228,7 +228,7 @@ const Enterprise = ({ enterpriseId }) => {
               <>
                 <div className="fg">
                   <label>{isIncome(form.activity) ? 'Sale proceeds (KES)' : 'Activity cost (KES)'}</label>
-                  <input type="number" min="0" step="any" name="money" value={form.money} onChange={set} placeholder={isIncome(form.activity) ? 'Optional — enter total proceeds if known' : 'Optional'} />
+                  <input type="number" min="0" step="any" name="money" value={form.money} onChange={set} placeholder={isIncome(form.activity) ? 'Optional: enter total proceeds if known' : 'Optional'} />
                 </div>
               </>
             )}

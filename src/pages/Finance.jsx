@@ -37,7 +37,7 @@ const Finance = () => {
     <div className="theme-finance">
       <div className="section-banner" style={{ background: 'var(--finance-l)' }}>
         <div>
-          <h3 style={{ color: 'var(--finance-h)' }}>Financial Management</h3>
+          <h3 style={{ color: 'var(--finance-h)' }}>Financial management</h3>
           <p style={{ color: 'var(--finance-b)' }}>Track income, expenses, and farm finances</p>
         </div>
       </div>
@@ -54,15 +54,15 @@ const Finance = () => {
       </div>
       <div className="stat-grid">
         <div className="stat accent" style={{ '--accent-color': 'var(--green)' }}>
-          <div className="stat-label">Total Income</div>
+          <div className="stat-label">Total income</div>
           <div className="stat-val" style={{ color: 'var(--green)' }}>{ksh(inc)}</div>
         </div>
         <div className="stat accent" style={{ '--accent-color': 'var(--red)' }}>
-          <div className="stat-label">Total Expenses</div>
+          <div className="stat-label">Total expenses</div>
           <div className="stat-val" style={{ color: 'var(--red)' }}>{ksh(exp)}</div>
         </div>
         <div className="stat accent" style={{ '--accent-color': 'var(--finance-m)' }}>
-          <div className="stat-label">Net Balance</div>
+          <div className="stat-label">Net balance</div>
           <div 
             className="stat-val" 
             style={{ color: inc - exp >= 0 ? 'var(--green)' : 'var(--red)' }}
@@ -74,21 +74,21 @@ const Finance = () => {
 
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">Financial Overview</div>
+          <div className="card-title">Financial overview</div>
         </div>
         <FinanceChart />
       </div>
 
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">Monthly Trends</div>
+          <div className="card-title">Monthly trends</div>
         </div>
         <MonthlyFinanceChart />
       </div>
 
       <div className="card">
         <div className="card-hdr">
-          <div className="card-title">All Transactions ({db.transactions.length})</div>
+          <div className="card-title">All transactions ({db.transactions.length})</div>
         </div>
         {db.transactions.length === 0 ? (
           <div className="empty-state">

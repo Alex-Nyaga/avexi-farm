@@ -59,8 +59,7 @@ const Dashboard = () => {
       <section className="home-actions" aria-label="Farm areas and actions">
         <div className="card-hdr">
           <div>
-            <h2 className="card-title">What would you like to do?</h2>
-            <div className="card-sub">Choose an area to record or review farm work.</div>
+            <h2 className="card-title">Farm areas</h2>
           </div>
         </div>
         <div className="home-action-grid">

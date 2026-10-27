@@ -22,7 +22,7 @@ const Onboarding = () => {
         <h1 className="onboard-title">What do you farm?</h1>
         <p className="text-muted">
           Pick a category, then tick everything you rear or grow. Each choice gets its own page in your side menu.
-          You can add, archive or remove them later under <strong>My Farm</strong>.
+          You can add, archive or remove them later under <strong>My farm</strong>.
         </p>
         <EnterprisePicker selected={picker.selected} customItems={picker.customs} onToggle={picker.toggle} onAddCustom={picker.addCustom} />
         <div className="onboard-foot">

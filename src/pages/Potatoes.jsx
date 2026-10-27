@@ -137,7 +137,7 @@ const Potatoes = () => {
         amount: revenue,
         source: activity.details?.buyer || 'Crop sale',
         category: 'Crop Sale',
-        desc: `Sale — ${season.plotName}${activity.details?.buyer ? ` (${activity.details.buyer})` : ''}`
+        desc: `Sale, ${season.plotName}${activity.details?.buyer ? ` (${activity.details.buyer})` : ''}`
       }];
     } else if (cost > 0) {
       updatedDb.transactions = [...db.transactions, {
@@ -287,7 +287,7 @@ const Potatoes = () => {
             )}
             {activityForm.activity && (
               activityForm.activity === 'Sale'
-                ? <div className="fg"><label>Total sale proceeds (KES)</label><input type="number" min="0" step="any" name="revenue" value={activityForm.revenue} onChange={changeActivityField} placeholder="Optional — enter total if known" /></div>
+                ? <div className="fg"><label>Total sale proceeds (KES)</label><input type="number" min="0" step="any" name="revenue" value={activityForm.revenue} onChange={changeActivityField} placeholder="Optional: enter total if known" /></div>
                 : <div className="fg"><label>Activity cost (KES)</label><input type="number" min="0" step="any" name="cost" value={activityForm.cost} onChange={changeActivityField} placeholder="0" /></div>
             )}
             <div className="fg fg-full"><label>Notes</label><textarea value={activityForm.notes} onChange={(e) => setActivityForm({ ...activityForm, notes: e.target.value })} placeholder="Products used, labour, or observations" /></div>

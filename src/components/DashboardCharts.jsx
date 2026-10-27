@@ -129,7 +129,7 @@ const DashboardCharts = () => {
           y: { ticks: { color: colors.text }, grid: { color: colors.border }, beginAtZero: true, title: { display: true, text: 'Count', color: colors.text } }
         }
       }
-    }), { filename: 'farm-overview-chart.png', title: 'Avexi Farm — Farm Overview' });
+    }), { filename: 'farm-overview-chart.png', title: 'Avexi Farm: farm overview' });
   };
 
   if (!chartLoaded) {

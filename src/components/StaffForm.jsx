@@ -129,7 +129,7 @@ const StaffForm = ({ isOpen, onClose, staffId }) => {
             </div>
           )}
           <div className="fg">
-            <label>Start Date</label>
+            <label>Start date</label>
             <input type="date" name="startDate" value={formData.startDate || today()} onChange={handleChange} />
           </div>
         </div>
@@ -140,7 +140,7 @@ const StaffForm = ({ isOpen, onClose, staffId }) => {
         </div>
 
         <div className="modal-actions">
-          <button type="submit" className="btn btn-primary">Save Staff</button>
+          <button type="submit" className="btn btn-primary">Save staff member</button>
           <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
           {staffId && <button type="button" className="btn btn-danger btn-sm" onClick={handleDelete}>Delete</button>}
         </div>
