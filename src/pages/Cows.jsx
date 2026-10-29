@@ -105,7 +105,6 @@ const Cows = () => {
             <>
               <button className="btn btn-primary btn-sm" onClick={handleAddCow}>+ Add cow</button>
               <button className="btn btn-outline btn-sm" onClick={handleAddEvent}>+ Log event</button>
-              <button className="btn btn-outline btn-sm" onClick={() => handleSellAnimal(null)}>Sell animal</button>
             </>
           ) : (
             <span className="badge bg-amber">View only (staff)</span>
