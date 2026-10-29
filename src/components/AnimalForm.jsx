@@ -4,7 +4,7 @@ import SelectOrOther from './SelectOrOther';
 import { useApp } from '../context/AppContext';
 import { uid, today } from '../utils/helpers';
 
-const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
+const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false, promoteFromId = null }) => {
   const { db, setDb, sdb, isAdminOrOwner } = useApp();
   const [formData, setFormData] = useState({});
   const [photoPreview, setPhotoPreview] = useState(null);
@@ -12,6 +12,7 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
   const isCow = type === 'cow';
   const list = isCow ? db.cows : db.sheep;
   const animal = animalId ? list.find(x => x.id === animalId) : null;
+  const calfSource = promoteFromId ? db.calves.find(c => c.id === promoteFromId) : null;
 
   const species = isCow 
     ? ['Friesian', 'Jersey', 'Ayrshire', 'Guernsey', 'Brown Swiss', 'Zebu/Boran', 'Crossbreed']
@@ -22,9 +23,10 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
   const vaccines = ['FMD', 'Lumpy skin disease', 'Anthrax', 'Black quarter', 'Brucellosis', 'East Coast Fever', 'Rift Valley Fever', 'PPR', 'Sheep pox'];
 
   useEffect(() => {
-    if (animal) {
-      setFormData(animal);
-      if (animal.photo) setPhotoPreview(animal.photo);
+    const src = animal || calfSource;
+    if (src) {
+      setFormData(src);
+      if (src.photo) setPhotoPreview(src.photo);
     } else {
       setFormData({
         tag: '',
@@ -51,7 +53,7 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
       });
       setPhotoPreview(null);
     }
-  }, [animal, animalId]);
+  }, [animal, animalId, calfSource]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -91,6 +93,26 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
     if (f.dob && f.lastDeworming && f.lastDeworming < f.dob) { alert('Last deworming cannot be before the date of birth.'); return; }
     if (f.dob && f.lastVaccination && f.lastVaccination < f.dob) { alert('Last vaccination cannot be before the date of birth.'); return; }
     if (f.lastVaccination && f.nextVaccination && f.nextVaccination < f.lastVaccination) { alert('Next vaccination must be after the last vaccination.'); return; }
+
+    if (promoteFromId && !animalId) {
+      const newCow = {
+        ...formData,
+        id: uid(),
+        status: 'alive',
+        promotedFromCalfId: promoteFromId,
+        promotedDate: today(),
+        createdAt: calfSource?.createdAt || today()
+      };
+      const promotedDb = {
+        ...db,
+        cows: [...db.cows, newCow],
+        calves: db.calves.map(c => c.id === promoteFromId ? { ...c, status: 'promoted', promotedDate: today() } : c)
+      };
+      setDb(promotedDb);
+      sdb();
+      onClose();
+      return;
+    }
 
     const targetList = isCow ? (isCalf ? 'calves' : 'cows') : 'sheep';
     const purchasePrice = Number(formData.purchasePrice) || 0;
@@ -170,7 +192,7 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
   if (!isAdminOrOwner()) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={animal ? `Edit ${isCow ? 'Cow' : 'Sheep'}` : `Add ${isCalf ? 'Calf' : isCow ? 'Cow' : 'Sheep'}`}>
+    <Modal isOpen={isOpen} onClose={onClose} title={promoteFromId ? 'Promote calf to cow' : animal ? `Edit ${isCow ? 'Cow' : 'Sheep'}` : `Add ${isCalf ? 'Calf' : isCow ? 'Cow' : 'Sheep'}`}>
       <form onSubmit={handleSubmit}>
         <div className="form-grid">
           <div className="fg">
@@ -278,7 +300,7 @@ const AnimalForm = ({ isOpen, onClose, type, animalId, isCalf = false }) => {
         </div>
 
         <div className="modal-actions">
-          <button type="submit" className="btn btn-primary">Save {isCow ? 'Cow' : 'Sheep'}</button>
+          <button type="submit" className="btn btn-primary">{promoteFromId ? 'Promote to cow' : `Save ${isCow ? 'Cow' : 'Sheep'}`}</button>
           <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
           {animalId && <button type="button" className="btn btn-danger btn-sm" onClick={handleDelete}>Delete</button>}
         </div>

@@ -127,7 +127,7 @@ const MilkProductionChart = () => {
         alignItems: 'center', 
         justifyContent: 'center', 
         height: '250px',
-        color: 'var(--text-muted)'
+        color: 'var(--muted)'
       }}>
         Loading chart...
       </div>

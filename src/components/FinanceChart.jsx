@@ -185,7 +185,7 @@ const FinanceChart = () => {
         alignItems: 'center', 
         justifyContent: 'center', 
         height: '350px',
-        color: 'var(--text-muted)',
+        color: 'var(--muted)',
         fontSize: '14px'
       }}>
         Loading chart...

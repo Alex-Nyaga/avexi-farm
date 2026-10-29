@@ -139,7 +139,7 @@ const DashboardCharts = () => {
         alignItems: 'center', 
         justifyContent: 'center', 
         height: '200px',
-        color: 'var(--text-muted)',
+        color: 'var(--muted)',
         fontSize: '13px'
       }}>
         Loading...

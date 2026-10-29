@@ -3,20 +3,10 @@ import { useApp } from '../context/AppContext';
 import { playAlarm, alarmEnabled, setAlarmEnabled, unlockAudio } from '../utils/alarm';
 
 const Settings = () => {
-  const { currentUser, theme, toggleTheme, syncStatus, ldb, sdb } = useApp();
+  const { currentUser, theme, toggleTheme } = useApp();
 
   const [alarmOn, setAlarmOn] = React.useState(alarmEnabled());
   const toggleAlarm = (on) => { setAlarmEnabled(on); setAlarmOn(on); if (on) { unlockAudio(); playAlarm(); } };
-
-  const handleSync = async () => {
-    await sdb();
-    alert('Sync completed');
-  };
-
-  const handleRefresh = async () => {
-    await ldb();
-    alert('Data refreshed from cloud');
-  };
 
   return (
     <div>
@@ -56,31 +46,6 @@ const Settings = () => {
             <button className={`btn ${!alarmOn ? 'btn-primary' : 'btn-outline'}`} onClick={() => toggleAlarm(false)}>Off</button>
             <button className="btn btn-outline" onClick={() => { unlockAudio(); playAlarm(); }} disabled={!alarmOn}>Test sound</button>
           </div>
-        </div>
-      </div>
-      <div className="card">
-        <div className="card-hdr">
-          <div className="card-title">Data sync</div>
-        </div>
-        <div className="fg" style={{ marginBottom: '1rem' }}>
-          <label>Sync status</label>
-          <div style={{ 
-            padding: '.5rem 1rem', 
-            borderRadius: '8px', 
-            background: syncStatus === 'online' ? 'var(--green-l)' : syncStatus === 'offline' ? 'var(--amber-l)' : 'var(--blue-l)',
-            color: syncStatus === 'online' ? 'var(--green)' : syncStatus === 'offline' ? 'var(--amber)' : 'var(--blue)',
-            fontWeight: '600'
-          }}>
-            {syncStatus === 'online' ? 'Connected to Cloud' : syncStatus === 'offline' ? 'Local Mode' : 'Syncing...'}
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button className="btn btn-primary" onClick={handleSync}>
-            Sync to Cloud
-          </button>
-          <button className="btn btn-outline" onClick={handleRefresh}>
-            Refresh from Cloud
-          </button>
         </div>
       </div>
       <div className="card">

@@ -10,6 +10,7 @@ const Cows = () => {
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedCowId, setSelectedCowId] = useState(null);
   const [cowTab, setCowTab] = useState('list');
+  const [promoteFromId, setPromoteFromId] = useState(null);
 
   const liveCows = db.cows.filter(c => c.status === 'alive');
   const otherCows = db.cows.filter(c => c.status !== 'alive');
@@ -62,31 +63,9 @@ const Cows = () => {
   };
 
   const handlePromoteCalf = (id) => {
-    if (!confirm('Promote this calf to a cow?')) return;
-    
-    const calf = db.calves.find(c => c.id === id);
-    if (!calf) return;
-
-    const newCow = {
-      ...calf,
-      id: uid(),
-      status: 'alive',
-      promotedFromCalfId: calf.id,
-      promotedDate: today()
-    };
-
-    const updatedCalves = db.calves.map(c => 
-      c.id === id ? { ...c, status: 'promoted', promotedDate: today() } : c
-    );
-
-    const updatedDb = {
-      ...db,
-      calves: updatedCalves,
-      cows: [...db.cows, newCow]
-    };
-
-    setDb(updatedDb);
-    sdb();
+    setSelectedCowId(null);
+    setPromoteFromId(id);
+    setShowAnimalForm(true);
   };
 
   const handleDemoteCalf = (id) => {
@@ -307,7 +286,7 @@ const Cows = () => {
                           {isAdminOrOwner() ? (
                             <>
                               <button className="btn btn-outline btn-xs" onClick={() => handleEditCalf(calf.id)}>Edit</button>
-                              <button className="btn btn-xs" style={{ background: 'var(--cow-h)', color: '#fff' }} onClick={() => handlePromoteCalf(calf.id)}>Promote to Cow</button>
+                              <button className="btn btn-outline btn-xs" onClick={() => handlePromoteCalf(calf.id)}>Promote to cow</button>
                               <button className="btn btn-outline btn-xs" onClick={() => handleSellAnimal(calf.id)}>Sell</button>
                               <button className="btn btn-outline btn-xs btn-danger-ghost" onClick={() => handleRecordDeath(calf.id)}>Death</button>
                             </>
@@ -509,10 +488,11 @@ const Cows = () => {
 
       <AnimalForm 
         isOpen={showAnimalForm} 
-        onClose={() => setShowAnimalForm(false)} 
+        onClose={() => { setShowAnimalForm(false); setPromoteFromId(null); }} 
         type="cow" 
         animalId={selectedCowId}
-        isCalf={cowTab === 'calves'}
+        promoteFromId={promoteFromId}
+        isCalf={cowTab === 'calves' && !promoteFromId}
       />
 
       <EventForm 
