@@ -48,20 +48,20 @@ const Sheep = () => {
 
   return (
     <div className="theme-sheep">
-      <div className="section-banner" style={{ background: 'var(--sheep-l)' }}>
+      <div className="section-banner">
         <div>
-          <h3 style={{ color: 'var(--sheep-h)' }}>Sheep management</h3>
-          <p style={{ color: 'var(--sheep-b)' }}>Full livestock records: species, health, breeding, events</p>
+          <h3>Sheep management</h3>
+          <p>Full livestock records: species, health, breeding, events</p>
         </div>
       </div>
       <div className="page-hdr">
-        <div className="page-title" style={{ color: 'var(--sheep-h)' }}>Sheep</div>
+        <div className="page-title">Sheep</div>
         <div className="page-actions">
           {isAdminOrOwner() ? (
             <>
               <button className="btn btn-primary btn-sm" onClick={handleAddSheep}>+ Add Sheep</button>
               <button className="btn btn-outline btn-sm" onClick={handleAddEvent}>+ Log event</button>
-              <button className="btn btn-sm" style={{ background: '#bf8a3a', color: '#fff' }} onClick={() => handleSellAnimal(null)}>Sell animal</button>
+              <button className="btn btn-outline btn-sm" onClick={() => handleSellAnimal(null)}>Sell animal</button>
             </>
           ) : (
             <span className="badge bg-amber">View only (staff)</span>
@@ -133,8 +133,8 @@ const Sheep = () => {
                           {isAdminOrOwner() ? (
                             <>
                               <button className="btn btn-outline btn-xs" onClick={() => handleEditSheep(sheep.id)}>Edit</button>
-                              <button className="btn btn-xs" style={{ background: '#bf8a3a', color: '#fff' }} onClick={() => handleSellAnimal(sheep.id)}>Sell</button>
-                              <button className="btn btn-xs" style={{ background: 'var(--red)', color: '#fff' }} onClick={() => handleRecordDeath(sheep.id)}>Death</button>
+                              <button className="btn btn-outline btn-xs" onClick={() => handleSellAnimal(sheep.id)}>Sell</button>
+                              <button className="btn btn-outline btn-xs btn-danger-ghost" onClick={() => handleRecordDeath(sheep.id)}>Death</button>
                             </>
                           ) : '—'}
                         </td>

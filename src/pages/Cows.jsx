@@ -113,20 +113,20 @@ const Cows = () => {
 
   return (
     <div className="theme-cow">
-      <div className="section-banner" style={{ background: 'var(--cow-l)' }}>
+      <div className="section-banner">
         <div>
-          <h3 style={{ color: 'var(--cow-h)' }}>Cow management</h3>
-          <p style={{ color: 'var(--cow-b)' }}>Full livestock records: species, health, breeding, events</p>
+          <h3>Cow management</h3>
+          <p>Full livestock records: species, health, breeding, events</p>
         </div>
       </div>
       <div className="page-hdr">
-        <div className="page-title" style={{ color: 'var(--cow-h)' }}>Cows</div>
+        <div className="page-title">Cows</div>
         <div className="page-actions">
           {isAdminOrOwner() ? (
             <>
               <button className="btn btn-primary btn-sm" onClick={handleAddCow}>+ Add cow</button>
               <button className="btn btn-outline btn-sm" onClick={handleAddEvent}>+ Log event</button>
-              <button className="btn btn-sm" style={{ background: '#2a7a3a', color: '#fff' }} onClick={() => handleSellAnimal(null)}>Sell animal</button>
+              <button className="btn btn-outline btn-sm" onClick={() => handleSellAnimal(null)}>Sell animal</button>
             </>
           ) : (
             <span className="badge bg-amber">View only (staff)</span>
@@ -199,8 +199,8 @@ const Cows = () => {
                           {isAdminOrOwner() ? (
                             <>
                               <button className="btn btn-outline btn-xs" onClick={() => handleEditCow(cow.id)}>Edit</button>
-                              <button className="btn btn-xs" style={{ background: '#2a7a3a', color: '#fff' }} onClick={() => handleSellAnimal(cow.id)}>Sell</button>
-                              <button className="btn btn-xs" style={{ background: 'var(--red)', color: '#fff' }} onClick={() => handleRecordDeath(cow.id)}>Death</button>
+                              <button className="btn btn-outline btn-xs" onClick={() => handleSellAnimal(cow.id)}>Sell</button>
+                              <button className="btn btn-outline btn-xs btn-danger-ghost" onClick={() => handleRecordDeath(cow.id)}>Death</button>
                             </>
                           ) : '—'}
                         </td>
@@ -308,8 +308,8 @@ const Cows = () => {
                             <>
                               <button className="btn btn-outline btn-xs" onClick={() => handleEditCalf(calf.id)}>Edit</button>
                               <button className="btn btn-xs" style={{ background: 'var(--cow-h)', color: '#fff' }} onClick={() => handlePromoteCalf(calf.id)}>Promote to Cow</button>
-                              <button className="btn btn-xs" style={{ background: '#2a7a3a', color: '#fff' }} onClick={() => handleSellAnimal(calf.id)}>Sell</button>
-                              <button className="btn btn-xs" style={{ background: 'var(--red)', color: '#fff' }} onClick={() => handleRecordDeath(calf.id)}>Death</button>
+                              <button className="btn btn-outline btn-xs" onClick={() => handleSellAnimal(calf.id)}>Sell</button>
+                              <button className="btn btn-outline btn-xs btn-danger-ghost" onClick={() => handleRecordDeath(calf.id)}>Death</button>
                             </>
                           ) : '—'}
                         </td>

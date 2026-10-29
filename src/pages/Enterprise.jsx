@@ -194,7 +194,7 @@ const Enterprise = ({ enterpriseId }) => {
                     <td>{[r.notes, ...Object.entries(r.details || {}).filter(([, value]) => value !== '' && value != null).map(([key, value]) => `${formatActivityDetail(key)}: ${value}`)].filter(Boolean).join(' · ') || '—'}</td>
                     <td className="row-actions">
                       {canMoney && <button className="btn btn-outline btn-xs" onClick={() => openEdit(r)}>Edit</button>}
-                      {canMoney && <button className="btn btn-danger btn-xs" onClick={() => remove(r)}>Delete</button>}
+                      {canMoney && <button className="btn btn-outline btn-xs btn-danger-ghost" onClick={() => remove(r)}>Delete</button>}
                     </td>
                   </tr>
                 ))}

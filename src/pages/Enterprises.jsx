@@ -67,7 +67,7 @@ const Enterprises = () => {
           ) : (
             <button className="btn btn-outline btn-xs" onClick={() => setStatus(e.id, 'active')}>Restore</button>
           )}
-          <button className="btn btn-danger btn-xs" onClick={() => requireAdmin('delete enterprises') && setTarget(e)}>Delete</button>
+          <button className="btn btn-outline btn-xs btn-danger-ghost" onClick={() => requireAdmin('delete enterprises') && setTarget(e)}>Delete</button>
         </td>
       </tr>
     );

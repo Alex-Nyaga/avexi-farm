@@ -35,14 +35,14 @@ const Finance = () => {
 
   return (
     <div className="theme-finance">
-      <div className="section-banner" style={{ background: 'var(--finance-l)' }}>
+      <div className="section-banner">
         <div>
-          <h3 style={{ color: 'var(--finance-h)' }}>Financial management</h3>
-          <p style={{ color: 'var(--finance-b)' }}>Track income, expenses, and farm finances</p>
+          <h3>Financial management</h3>
+          <p>Track income, expenses, and farm finances</p>
         </div>
       </div>
       <div className="page-hdr">
-        <div className="page-title" style={{ color: 'var(--finance-h)' }}>Transactions</div>
+        <div className="page-title">Transactions</div>
         <div className="page-actions">
           {isAdminOrOwner() && (
             <>

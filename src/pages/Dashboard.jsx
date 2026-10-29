@@ -67,13 +67,11 @@ const Dashboard = () => {
             <button key={item.section} className="home-action-card" onClick={() => navigate(item.section)}>
               <span className="home-action-label">{item.label}</span>
               <span className="home-action-hint">{item.hint}</span>
-              <span className="home-action-arrow" aria-hidden="true">→</span>
             </button>
           ))}
           <button className="home-action-card" onClick={() => navigate('reports')}>
             <span className="home-action-label">View reports</span>
             <span className="home-action-hint">Download a full record of your farm</span>
-            <span className="home-action-arrow" aria-hidden="true">→</span>
           </button>
         </div>
       </section>

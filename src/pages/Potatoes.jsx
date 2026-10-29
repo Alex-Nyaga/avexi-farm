@@ -171,10 +171,10 @@ const Potatoes = () => {
 
   return (
     <div className="theme-potato">
-      <div className="section-banner" style={{ background: 'var(--potato-l)' }}>
+      <div className="section-banner">
         <div>
-          <h3 style={{ color: 'var(--potato-h)' }}>Potatoes and planting</h3>
-          <p style={{ color: 'var(--potato-b)' }}>Keep each plot, planting season, and field activity in one place.</p>
+          <h3>Potatoes and planting</h3>
+          <p>Keep each plot, planting season, and field activity in one place.</p>
         </div>
       </div>
       <div className="page-hdr">

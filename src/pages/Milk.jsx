@@ -22,14 +22,14 @@ const Milk = () => {
 
   return (
     <div className="theme-cow">
-      <div className="section-banner" style={{ background: 'var(--cow-l)' }}>
+      <div className="section-banner">
         <div>
-          <h3 style={{ color: 'var(--cow-h)' }}>Milk records</h3>
-          <p style={{ color: 'var(--cow-b)' }}>Track daily milk production from your cows</p>
+          <h3>Milk records</h3>
+          <p>Track daily milk production from your cows</p>
         </div>
       </div>
       <div className="page-hdr">
-        <div className="page-title" style={{ color: 'var(--cow-h)' }}>Milk records</div>
+        <div className="page-title">Milk records</div>
         <div className="page-actions">
           <button className="btn btn-primary btn-sm" onClick={handleAddRecord}>+ Add Milk Record</button>
         </div>
